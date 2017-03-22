@@ -29,9 +29,9 @@ class Parser {
 
         while (match(QUESTION_MARK)){
             Token operator = previous();
-            Expr right = comparison();
+            Expr right = equality();
             if(!match(COLON)) throw error(peek(), "Missing ':' in ternary expression.");
-            Expr rightRight = comparison();
+            Expr rightRight = equality();
             expr = new Expr.Ternary(operator, expr, right, rightRight);
         }
 

@@ -22,8 +22,8 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
 - print
 
 ## Grammar
-    ternary    → expression ? true expression : false expression | expression
-    expression → equality
+    expression → ternary
+    ternary    → equality ? true equality : false equality )* | equality
     equality   → comparison ( ( "!=" | "==" ) comparison )*
     comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )*
     term       → factor ( ( "-" | "+" ) factor )*
@@ -32,7 +32,7 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
                | ( "++" | "--" ) prefix
                | primary
     postfix    → ( "++" | "--" ) postfix
-    primary    → NUMBER | STRING | "false" | "true" | "nil"
+    primary    → NUMBER | STRING | "false" | "true" | "none"
                | "(" expression ")"
                
 ### Notes
