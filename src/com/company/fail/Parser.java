@@ -75,9 +75,21 @@ class Parser {
     }
 
     private Expr factor() {
-        Expr expr = unary();
+        Expr expr = exponent();
 
         while (match(SLASH, STAR)) {
+            Token operator = previous();
+            Expr right = exponent();
+            expr = new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private  Expr exponent() {
+        Expr expr = unary();
+
+        while (match(STAR_STAR)) {
             Token operator = previous();
             Expr right = unary();
             expr = new Expr.Binary(expr, operator, right);
@@ -91,7 +103,7 @@ class Parser {
         if (match(BANG, MINUS, PLUS_PLUS, MINUS_MINUS)) {
             Token operator = previous();
             Expr right = unary();
-            return new Expr.Unary(operator, right);
+            return new Expr.Unary(operator, right, false);
         }
         if(match(PLUS)){
             throw error(previous(), "Unary '+' not supported.");
@@ -107,7 +119,7 @@ class Parser {
             current--;
             Expr left = primary();
             advance();
-            return new Expr.Unary(operator, left);
+            return new Expr.Unary(operator, left, true);
         }
 
         return primary();

@@ -27,11 +27,13 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
     equality   → comparison ( ( "!=" | "==" ) comparison )*
     comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )*
     term       → factor ( ( "-" | "+" ) factor )*
-    factor     → unary ( ( "/" | "*" ) unary )*
+    factor     → exponent ( ( "/" | "*" ) exponent )*
+    exponent   → unary ( ( "**" ) unary )*
     unary      → ( "!" | "-" | "+" ) unary
-               | ( "++" | "--" ) prefix
+               | ( "++" | "--" ) unary
+               | postfix
+    postfix    → postfix ( "++" | "--" )
                | primary
-    postfix    → ( "++" | "--" ) postfix
     primary    → NUMBER | STRING | "false" | "true" | "none"
                | "(" expression ")"
                
@@ -43,3 +45,4 @@ Additional features mostly based on tasks from book:
 - multiline comments
 - postfix and prefix increment/decrement operators
 - ternary operator
+- exponent operator

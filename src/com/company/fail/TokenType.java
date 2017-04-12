@@ -11,6 +11,8 @@ enum TokenType {
     GREATER, GREATER_EQUAL,
     LESS, LESS_EQUAL,
     PLUS_PLUS, MINUS_MINUS,
+    //Exponent
+    STAR_STAR,
 
     //Conditional
     QUESTION_MARK, COLON,

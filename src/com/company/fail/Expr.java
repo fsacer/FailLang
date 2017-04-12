@@ -1,7 +1,5 @@
 package com.company.fail;
 
-import java.util.List;
-
 abstract class Expr {
   interface Visitor<R> {
     R visitBinaryExpr(Binary expr);
@@ -52,9 +50,10 @@ abstract class Expr {
   }
 
   static class Unary extends Expr {
-    Unary(Token operator, Expr right) {
+    Unary(Token operator, Expr right, Boolean postfix) {
       this.operator = operator;
       this.right = right;
+      this.postfix = postfix;
     }
 
     <R> R accept(Visitor<R> visitor) {
@@ -63,6 +62,7 @@ abstract class Expr {
 
     final Token operator;
     final Expr right;
+    final Boolean postfix;
   }
 
   static class Ternary extends Expr {
