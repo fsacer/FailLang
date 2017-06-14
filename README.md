@@ -61,3 +61,6 @@ Additional features mostly based on tasks from book:
 - postfix and prefix increment/decrement operators
 - ternary operator
 - exponent operator
+- prevent access to unassigned variables (no implicit initialization to none)
+- changed the order of var assignment (first definition of variable with none and then assignment)
+  to prevent accessing variable from outer scope during initializing
