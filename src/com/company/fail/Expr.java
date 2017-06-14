@@ -1,12 +1,30 @@
 package com.company.fail;
 
+import java.util.List;
+
 abstract class Expr {
   interface Visitor<R> {
+    R visitAssignExpr(Assign expr);
     R visitBinaryExpr(Binary expr);
     R visitGroupingExpr(Grouping expr);
     R visitLiteralExpr(Literal expr);
     R visitUnaryExpr(Unary expr);
     R visitTernaryExpr(Ternary expr);
+    R visitVariableExpr(Variable expr);
+  }
+
+  static class Assign extends Expr {
+    Assign(Token name, Expr value) {
+      this.name = name;
+      this.value = value;
+    }
+
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitAssignExpr(this);
+    }
+
+    final Token name;
+    final Expr value;
   }
 
   static class Binary extends Expr {
@@ -81,6 +99,18 @@ abstract class Expr {
     final Expr expr;
     final Expr trueExpr;
     final Expr falseExpr;
+  }
+
+  static class Variable extends Expr {
+    Variable(Token name) {
+      this.name = name;
+    }
+
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitVariableExpr(this);
+    }
+
+    final Token name;
   }
 
   abstract <R> R accept(Visitor<R> visitor);

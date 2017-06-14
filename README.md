@@ -22,20 +22,35 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
 - print
 
 ## Grammar
-    expression → ternary
-    ternary    → equality ? true equality : false equality )* | equality
-    equality   → comparison ( ( "!=" | "==" ) comparison )*
-    comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )*
-    term       → factor ( ( "-" | "+" ) factor )*
-    factor     → exponent ( ( "/" | "*" ) exponent )*
-    exponent   → unary ( ( "**" ) unary )*
-    unary      → ( "!" | "-" | "+" ) unary
-               | ( "++" | "--" ) unary
-               | postfix
-    postfix    → postfix ( "++" | "--" )
-               | primary
-    primary    → NUMBER | STRING | "false" | "true" | "none"
-               | "(" expression ")"
+    program     → declaration* EOF ;
+    declaration → varDecl
+                | statement ;
+    varDecl     → "var" IDENTIFIER ( "=" expression )? ";" ;
+    statement   → exprStmt
+                | printStmt
+                | block;
+    exprStmt    → expression ";" ;
+    printStmt   → "print" expression ";" ;
+    block       → "{" declaration* "}" ;
+     
+    expression  → assignment ;
+    assignment  → identifier ( "=" assignment )?
+                | ternary ;
+    ternary     → equality ? true equality : false equality )* | equality
+    equality    → comparison ( ( "!=" | "==" ) comparison )*
+    comparison  → term ( ( ">" | ">=" | "<" | "<=" ) term )*
+    term        → factor ( ( "-" | "+" ) factor )*
+    factor      → exponent ( ( "/" | "*" ) exponent )*
+    exponent    → unary ( ( "**" ) unary )*
+    unary       → ( "!" | "-" | "+" ) unary
+                | ( "++" | "--" ) unary
+                | postfix
+    postfix     → postfix ( "++" | "--" )
+                | primary
+    primary     → "true" | "false" | "none" | "this"
+                | NUMBER | STRING
+                | "(" expression ")"
+                | IDENTIFIER ;
                
 ### Notes
 Unary '+' operator is a syntax error.

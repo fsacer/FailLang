@@ -1,18 +1,26 @@
 package com.company.fail;
 
-/**
- * Created by franci on 12.4.2017.
- */
-import static java.lang.Math.*;
-class Interpreter implements Expr.Visitor<Object> {
+import java.util.List;
+
+class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    private Environment environment = new Environment();
+
     void interpret(Expr expression) {
         try {
             Object value = evaluate(expression);
             System.out.println(stringify(value));
         } catch (RuntimeError error) {
             Fail.runtimeError(error);
-        } catch (Exception error) {
-            //Do not crash
+        }
+    }
+
+    void interpret(List<Stmt> statements) {
+        try {
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        } catch (RuntimeError error) {
+            Fail.runtimeError(error);
         }
     }
 
@@ -28,6 +36,61 @@ class Interpreter implements Expr.Visitor<Object> {
 
     private Object evaluate(Expr expr) {
         return expr.accept(this);
+    }
+
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
+    }
+
+    @Override
+    public Void visitBlockStmt(Stmt.Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
+    void executeBlock(List<Stmt> statements, Environment environment) {
+        Environment previous = this.environment;
+        try {
+            this.environment = environment;
+
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            this.environment = previous;
+        }
+    }
+
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitVarStmt(Stmt.Var stmt) {
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+        }
+
+        environment.define(stmt.name.lexeme, value);
+        return null;
+    }
+
+    @Override
+    public Object visitAssignExpr(Expr.Assign expr) {
+        Object value = evaluate(expr.value);
+
+        environment.assign(expr.name, value);
+        return value;
     }
 
     @Override
@@ -60,6 +123,11 @@ class Interpreter implements Expr.Visitor<Object> {
 
         // Unreachable.
         return null;
+    }
+
+    @Override
+    public Object visitVariableExpr(Expr.Variable expr) {
+        return environment.get(expr.name);
     }
 
     private boolean isTrue(Object object) {
@@ -139,7 +207,6 @@ class Interpreter implements Expr.Visitor<Object> {
         return a == null && b == null || a != null && a.equals(b);
     }
 
-
     @Override
     public Object visitTernaryExpr(Expr.Ternary expr) {
         Object check = evaluate(expr.expr);
@@ -166,5 +233,4 @@ class Interpreter implements Expr.Visitor<Object> {
 
         return object.toString();
     }
-
 }

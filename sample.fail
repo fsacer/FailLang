@@ -1,0 +1,40 @@
+print "one";
+print true;
+print 2 + 1; // "3"
+
+var a = 1;
+var b = 2;
+print a + b; // "3"
+
+var a = 1;
+print a = 2; // "2".
+
+print "
+scopes:";
+var a = "global a";
+var b = "global b";
+var c = "global c";
+{
+  var a = "outer a";
+  var b = "outer b";
+  {
+    var a = "inner a";
+    print a;
+    print b;
+    print c;
+  }
+  print a;
+  print b;
+  print c;
+}
+print a;
+print b;
+print c;
+
+print "
+overlap:";
+var a = 1;
+{
+  var a = a + 2;
+  print a;
+}

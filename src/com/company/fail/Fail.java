@@ -45,12 +45,34 @@ public class Fail {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
-        Expr expression = parser.parse();
-        interpreter.interpret(expression);
+        if(tokens.stream().filter(
+            x -> x.type == TokenType.SEMICOLON
+            || x.type == TokenType.CLASS
+            || x.type == TokenType.FUN
+            || x.type == TokenType.VAR
+            || x.type == TokenType.FOR
+            || x.type == TokenType.IF
+            || x.type == TokenType.WHILE
+            || x.type == TokenType.PRINT
+            || x.type == TokenType.RETURN
+            || x.type == TokenType.IDENTIFIER
+            || x.type == TokenType.LEFT_BRACE
+            || x.type == TokenType.RIGHT_BRACE).count() == 0){
+            Expr expr = parser.parseExpr();
+            if(hadError) return;
+            interpreter.interpret(expr);
+            return;
+        }
+        List<Stmt> statements = parser.parse();
+
+        // Stop if there was a syntax error.
+        if (hadError) return;
+
+        interpreter.interpret(statements);
 /*
         if (!hadError) {
             System.out.println(new AstPrinter().print(expression));
-        }
+        }v
         */
 /*
         // For now, just print the tokens.

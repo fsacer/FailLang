@@ -36,7 +36,7 @@ class Scanner {
     }
 
     Scanner(String source) {
-        this.source = source;
+        this.source = source.replace("\\n", "\n");
     }
 
     List<Token> scanTokens() {
