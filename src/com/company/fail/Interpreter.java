@@ -98,7 +98,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
         switch (expr.operator.type) {
             case BANG:
-                return !isTrue(right);
+                return !isTruthy(right);
             case MINUS:
                 checkNumberOperand(expr.operator, right);
                 return -(double)right;
@@ -129,8 +129,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return environment.get(expr.name);
     }
 
-    private boolean isTrue(Object object) {
-        return object != null && (!(object instanceof Boolean) || (boolean) object);
+    private boolean isTruthy(Object object) {
+        if (object == null) return false;
+        if (object instanceof Boolean) return (boolean)object;
+        return true;
     }
 
     private void checkNumberOperand(Token operator, Object operand) {
@@ -212,7 +214,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         Object trueExpr = evaluate(expr.trueExpr);
         Object falseExpr = evaluate(expr.falseExpr);
 
-        if(isTrue(check))
+        if(isTruthy(check))
             return trueExpr;
         else
             return falseExpr;

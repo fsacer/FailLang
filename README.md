@@ -54,7 +54,11 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
                
 ### Notes
 Unary '+' operator is a syntax error.
-           
+
+##Rules
+###Truthyness
+Fail follows Ruby’s simple rule: false and none are falsey and everything else is truthy. We implement that like so:
+
 ## Added features
 Additional features mostly based on tasks from book:
 - multiline comments
