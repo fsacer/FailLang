@@ -33,10 +33,13 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
     printStmt   → "print" expression ";" ;
     block       → "{" declaration* "}" ;
      
-    expression  → assignment ;
+    expression  → comma ;
+    comma       → assignment ( "," assignment )?
+                | assignment ;
     assignment  → identifier ( "=" assignment )?
                 | ternary ;
-    ternary     → equality ? true equality : false equality )* | equality
+    ternary     → equality ? true equality : false equality )*
+                | equality
     equality    → comparison ( ( "!=" | "==" ) comparison )*
     comparison  → term ( ( ">" | ">=" | "<" | "<=" ) term )*
     term        → factor ( ( "-" | "+" ) factor )*
@@ -55,9 +58,31 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
 ### Notes
 Unary '+' operator is a syntax error.
 
-##Rules
-###Truthyness
-Fail follows Ruby’s simple rule: false and none are falsey and everything else is truthy. We implement that like so:
+## Rules
+### Operator precedence (highest → lowest)
+
+    Name	    Operators	   Associates
+    Postfix     a++ a--        Left
+    Unary	    ! -	++a --a    Right
+    Exponent    **             Left
+    Factor	    / *	           Left
+    Term	    - +	           Left
+    Comparison  > >= < <=	   Left
+    Equality    == !=          Left
+    Ternary     ?:             Left
+    Assignment  =              Right
+    Comma       ,              Left
+
+### Truthyness
+Fail follows Ruby’s simple rule: false and none are falsey and everything else is truthy.
+
+## Escape sequences
+    \" – double quote
+    \\ – single backslash
+    \b – backspace
+    \r – carriage return
+    \n – newline
+    \t – tab
 
 ## Added features
 Additional features mostly based on tasks from book:
@@ -68,3 +93,5 @@ Additional features mostly based on tasks from book:
 - prevent access to unassigned variables (no implicit initialization to none)
 - changed the order of var assignment (first definition of variable with none and then assignment)
   to prevent accessing variable from outer scope during initializing
+- accept escape sequences
+- added comma operator

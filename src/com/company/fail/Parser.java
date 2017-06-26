@@ -24,21 +24,24 @@ class Parser {
     List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            statements.add(declaration());
+            List<Stmt> declarations = declaration();
+            if(declarations != null)
+                statements.addAll(declarations);
         }
 
         return statements;
     }
 
     private Expr expression() {
-        return assignment();
+        return comma();
     }
 
-    private Stmt declaration() {
+    private List<Stmt> declaration() {
+        List<Stmt> lst = new ArrayList<>();
         try {
-            if (match(VAR)) return varDeclaration();
-
-            return statement();
+            if (match(VAR)) lst.addAll(varDeclaration());
+            else lst.add(statement());
+            return lst;
         } catch (ParseError error) {
             synchronize();
             return null;
@@ -58,16 +61,24 @@ class Parser {
         return new Stmt.Print(value);
     }
 
-    private Stmt varDeclaration() {
+    private List<Stmt> varDeclaration() {
+        List<Stmt> lst = new ArrayList<>();
         Token name = consume(IDENTIFIER, "Expect variable name.");
 
         Expr initializer = null;
         if (match(EQUAL)) {
-            initializer = expression();
+            initializer = assignment();
+        }
+        lst.add(new Stmt.Var(name, initializer));
+        while(match(COMMA)) {
+            name = consume(IDENTIFIER, "Expect variable name.");
+            consume(EQUAL, "Expect assignment in multiple variable declaration.");
+            initializer = assignment();
+            lst.add(new Stmt.Var(name, initializer));
         }
 
         consume(SEMICOLON, "Expect ';' after variable declaration.");
-        return new Stmt.Var(name, initializer);
+        return lst;
     }
 
     private Stmt expressionStatement() {
@@ -80,11 +91,23 @@ class Parser {
         List<Stmt> statements = new ArrayList<>();
 
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
-            statements.add(declaration());
+            List<Stmt> declarations = declaration();
+            if(declarations != null) {
+                statements.addAll(declarations);
+            }
         }
 
         consume(RIGHT_BRACE, "Expect '}' after block.");
         return statements;
+    }
+
+    private Expr comma() {
+        Expr last = assignment();
+        while (match(COMMA)) {
+            last = assignment();
+        }
+
+        return last;
     }
 
     private Expr assignment() {

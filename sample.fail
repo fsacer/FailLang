@@ -31,6 +31,7 @@ print a;
 print b;
 print c;
 
+/* should cause error because we are preventing access to outer variable if we are reassigning it in local scope
 print "
 overlap:";
 var a = 1;
@@ -38,3 +39,29 @@ var a = 1;
   var a = a + 2;
   print a;
 }
+*/
+
+print "\nternary associativity test returns horse because of left-associativity";
+var arg = "T";
+var vehicle = ( ( arg == "B" ) ? "bus" :
+             ( arg == "A" ) ? "airplane" :
+             ( arg == "T" ) ? "train" :
+             ( arg == "C" ) ? "car" :
+             ( arg == "H" ) ? "horse" :
+                              "feet" );
+print vehicle;
+
+print "\nbasic comma test returns 4 (last value)";
+var i = (1,2,4);
+print i;
+
+print "\nvar comma test (assigns all values and uses last val)";
+var a=1, b=2, c=3;
+var i = (a, b);
+print i;
+print a = 4, b = 5, c = 6;
+
+/* should fail all variables should have assignment
+var a = 4, b, c=5;
+print b;
+*/

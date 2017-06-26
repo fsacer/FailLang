@@ -27,8 +27,6 @@ class Scanner {
         keywords.put("none",   NONE);
         keywords.put("or",     OR);
         keywords.put("print",  PRINT);
-        keywords.put("return", RETURN);
-        keywords.put("super",  SUPER);
         keywords.put("this",   THIS);
         keywords.put("true",   TRUE);
         keywords.put("var",    VAR);
@@ -36,7 +34,14 @@ class Scanner {
     }
 
     Scanner(String source) {
-        this.source = source.replace("\\n", "\n");
+        //handle escape sequences
+        this.source = source
+                .replace("\\\"", "\"")
+                .replace("\\\\", "\\")
+                .replace("\\b", "\b")
+                .replace("\\r", "\r")
+                .replace("\\n", "\n")
+                .replace("\\t", "\t");
     }
 
     List<Token> scanTokens() {
