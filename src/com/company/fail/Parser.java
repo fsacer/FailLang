@@ -1,5 +1,8 @@
 package com.company.fail;
 
+import org.w3c.dom.ls.LSException;
+
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import static com.company.fail.TokenType.*;
@@ -15,7 +18,8 @@ class Parser {
 
     Expr parseExpr() {
         try {
-            return expression();
+            List<Expr> exprs = expressions();
+            return exprs.get(exprs.size() - 1);
         } catch (ParseError error) {
             return null;
         }
@@ -24,7 +28,7 @@ class Parser {
     List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            List<Stmt> declarations = declaration();
+            List<Stmt> declarations = declarations();
             if(declarations != null)
                 statements.addAll(declarations);
         }
@@ -32,15 +36,15 @@ class Parser {
         return statements;
     }
 
-    private Expr expression() {
+    private List<Expr> expressions() {
         return comma();
     }
 
-    private List<Stmt> declaration() {
+    private List<Stmt> declarations() {
         List<Stmt> lst = new ArrayList<>();
         try {
-            if (match(VAR)) lst.addAll(varDeclaration());
-            else lst.add(statement());
+            if (match(VAR)) lst.addAll(varDeclarations());
+            else lst.addAll(statements());
             return lst;
         } catch (ParseError error) {
             synchronize();
@@ -48,20 +52,23 @@ class Parser {
         }
     }
 
-    private Stmt statement() {
-        if (match(PRINT)) return printStatement();
-        if (match(LEFT_BRACE)) return new Stmt.Block(block());
+    private List<Stmt> statements() {
+        List<Stmt> stmts = new ArrayList<>();
+        if (match(PRINT)) stmts.add(printStatement());
+        else if (match(LEFT_BRACE)) stmts.add(new Stmt.Block(block()));
+        else stmts.add(new Stmt.Block(expressionStatements()));
 
-        return expressionStatement();
+        return stmts;
     }
 
     private Stmt printStatement() {
-        Expr value = expression();
+        List<Expr> exprs = expressions();
+        Expr value = exprs.get(exprs.size() - 1);
         consume(SEMICOLON, "Expect ';' after value.");
         return new Stmt.Print(value);
     }
 
-    private List<Stmt> varDeclaration() {
+    private List<Stmt> varDeclarations() {
         List<Stmt> lst = new ArrayList<>();
         Token name = consume(IDENTIFIER, "Expect variable name.");
 
@@ -81,17 +88,19 @@ class Parser {
         return lst;
     }
 
-    private Stmt expressionStatement() {
-        Expr expr = expression();
+    private List<Stmt> expressionStatements() {
+        List<Expr> exprs = expressions();
         consume(SEMICOLON, "Expect ';' after expression.");
-        return new Stmt.Expression(expr);
+        List<Stmt> stmts = new ArrayList<>();
+        exprs.forEach(x -> stmts.add(new Stmt.Expression(x)));
+        return stmts;
     }
 
     private List<Stmt> block() {
         List<Stmt> statements = new ArrayList<>();
 
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
-            List<Stmt> declarations = declaration();
+            List<Stmt> declarations = declarations();
             if(declarations != null) {
                 statements.addAll(declarations);
             }
@@ -101,13 +110,15 @@ class Parser {
         return statements;
     }
 
-    private Expr comma() {
+    private List<Expr> comma() {
+        List<Expr> exps = new ArrayList<>();
         Expr last = assignment();
+        exps.add(last);
         while (match(COMMA)) {
             last = assignment();
+            exps.add(last);
         }
-
-        return last;
+        return exps;
     }
 
     private Expr assignment() {
@@ -243,7 +254,8 @@ class Parser {
         }
 
         if (match(LEFT_PAREN)) {
-            Expr expr = expression();
+            List<Expr> exprs = expressions();
+            Expr expr = exprs.get(exprs.size() - 1);
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }

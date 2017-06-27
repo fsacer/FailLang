@@ -105,16 +105,26 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             case PLUS_PLUS: {
                 checkNumberOperand(expr.operator, right);
                 double value = (double) right;
-                if (expr.postfix)
+                if (expr.postfix) {
+                    if(expr.right instanceof Expr.Variable) {
+                        Expr.Variable variable = (Expr.Variable) expr.right;
+                        environment.assign(variable.name, value + 1);
+                    }
                     return value;
+                }
                 else
                     return value + 1;
             }
             case MINUS_MINUS: {
                 checkNumberOperand(expr.operator, right);
                 double value = (double) right;
-                if (expr.postfix)
+                if (expr.postfix) {
+                    if (expr.right instanceof Expr.Variable) {
+                        Expr.Variable variable = (Expr.Variable) expr.right;
+                        environment.assign(variable.name, value - 1);
+                    }
                     return value;
+                }
                 else
                     return value - 1;
             }

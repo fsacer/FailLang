@@ -65,3 +65,9 @@ print a = 4, b = 5, c = 6;
 var a = 4, b, c=5;
 print b;
 */
+
+print "\nassignment comma precedence test should result in 3:";
+var a=1, b=2, c=3;
+var i;
+i = a = a + 2, a + b;
+print i;
