@@ -1,9 +1,7 @@
 package com.company.fail;
 
-import org.w3c.dom.ls.LSException;
-
-import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import static com.company.fail.TokenType.*;
 
@@ -18,8 +16,7 @@ class Parser {
 
     Expr parseExpr() {
         try {
-            List<Expr> exprs = expressions();
-            return exprs.get(exprs.size() - 1);
+            return expression();
         } catch (ParseError error) {
             return null;
         }
@@ -36,7 +33,7 @@ class Parser {
         return statements;
     }
 
-    private List<Expr> expressions() {
+    private Expr expression() {
         return comma();
     }
 
@@ -44,7 +41,7 @@ class Parser {
         List<Stmt> lst = new ArrayList<>();
         try {
             if (match(VAR)) lst.addAll(varDeclarations());
-            else lst.addAll(statements());
+            else lst.add(statement());
             return lst;
         } catch (ParseError error) {
             synchronize();
@@ -52,18 +49,79 @@ class Parser {
         }
     }
 
-    private List<Stmt> statements() {
-        List<Stmt> stmts = new ArrayList<>();
-        if (match(PRINT)) stmts.add(printStatement());
-        else if (match(LEFT_BRACE)) stmts.add(new Stmt.Block(block()));
-        else stmts.add(new Stmt.Block(expressionStatements()));
+    private Stmt statement() {
+        if (match(FOR)) return forStatement();
+        if (match(IF)) return ifStatement();
+        if (match(PRINT)) return printStatement();
+        if (match(WHILE)) return whileStatement();
+        if (match(LEFT_BRACE)) return new Stmt.Block(block());
 
-        return stmts;
+        return expressionStatement();
+    }
+
+    //using desugaring technique
+    private Stmt forStatement() {
+        consume(LEFT_PAREN, "Expect '(' after 'for'.");
+
+        List<Stmt> initializer;
+        if (match(SEMICOLON)) {
+            initializer = null;
+        } else if (match(VAR)) {
+            initializer = varDeclarations();
+        } else {
+            initializer = new ArrayList<>();
+            initializer.add(expressionStatement());
+        }
+
+        Expr condition = null;
+        if (!check(SEMICOLON)) {
+            condition = expression();
+        }
+        consume(SEMICOLON, "Expect ';' after loop condition.");
+
+        Expr increment = null;
+        if (!check(RIGHT_PAREN)) {
+            increment = expression();
+        }
+        consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        Stmt body = statement();
+
+        if (increment != null) {
+            body = new Stmt.Block(Arrays.asList(
+                    body,
+                    new Stmt.Expression(increment)));
+        }
+
+        if (condition == null) condition = new Expr.Literal(true);
+        body = new Stmt.While(condition, body);
+
+        if (initializer != null) {
+            List<Stmt> stmts = new ArrayList<>();
+            stmts.addAll(initializer);
+            stmts.add(body);
+            body = new Stmt.Block(stmts);
+        }
+
+        return body;
+    }
+
+    private Stmt ifStatement() {
+        consume(LEFT_PAREN, "Expect '(' after 'if'.");
+        Expr condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after if condition.");
+
+        Stmt thenBranch = statement();
+        Stmt elseBranch = null;
+        if (match(ELSE)) {
+            elseBranch = statement();
+        }
+
+        return new Stmt.If(condition, thenBranch, elseBranch);
     }
 
     private Stmt printStatement() {
-        List<Expr> exprs = expressions();
-        Expr value = exprs.get(exprs.size() - 1);
+        Expr value = expression();
         consume(SEMICOLON, "Expect ';' after value.");
         return new Stmt.Print(value);
     }
@@ -88,12 +146,19 @@ class Parser {
         return lst;
     }
 
-    private List<Stmt> expressionStatements() {
-        List<Expr> exprs = expressions();
+    private Stmt whileStatement() {
+        consume(LEFT_PAREN, "Expect '(' after 'while'.");
+        Expr condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after condition.");
+        Stmt body = statement();
+
+        return new Stmt.While(condition, body);
+    }
+
+    private Stmt expressionStatement() {
+        Expr expr = expression();
         consume(SEMICOLON, "Expect ';' after expression.");
-        List<Stmt> stmts = new ArrayList<>();
-        exprs.forEach(x -> stmts.add(new Stmt.Expression(x)));
-        return stmts;
+        return new Stmt.Expression(expr);
     }
 
     private List<Stmt> block() {
@@ -110,15 +175,15 @@ class Parser {
         return statements;
     }
 
-    private List<Expr> comma() {
-        List<Expr> exps = new ArrayList<>();
-        Expr last = assignment();
-        exps.add(last);
+    private Expr comma() {
+        Expr expr = assignment();
+
         while (match(COMMA)) {
-            last = assignment();
-            exps.add(last);
+            Token comma = previous();
+            expr = new Expr.Binary(expr, comma, assignment());
         }
-        return exps;
+
+        return expr;
     }
 
     private Expr assignment() {
@@ -140,14 +205,38 @@ class Parser {
     }
 
     private  Expr ternary() {
-        Expr expr = equality();
+        Expr expr = or();
 
         while (match(QUESTION_MARK)){
             Token operator = previous();
-            Expr right = equality();
+            Expr right = or();
             consume(COLON, "Missing ':' in ternary expression.");
-            Expr rightRight = equality();
+            Expr rightRight = or();
             expr = new Expr.Ternary(operator, expr, right, rightRight);
+        }
+
+        return expr;
+    }
+
+    private Expr or() {
+        Expr expr = and();
+
+        while (match(OR)) {
+            Token operator = previous();
+            Expr right = and();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr and() {
+        Expr expr = equality();
+
+        while (match(AND)) {
+            Token operator = previous();
+            Expr right = equality();
+            expr = new Expr.Logical(expr, operator, right);
         }
 
         return expr;
@@ -254,8 +343,7 @@ class Parser {
         }
 
         if (match(LEFT_PAREN)) {
-            List<Expr> exprs = expressions();
-            Expr expr = exprs.get(exprs.size() - 1);
+            Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }

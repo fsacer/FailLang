@@ -22,24 +22,38 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
 - print
 
 ## Grammar
+Statements:
+   
     program     → declaration* EOF ;
     declaration → varDecl
                 | statement ;
     varDecl     → "var" IDENTIFIER ( "=" expression )? ";" ;
     statement   → exprStmt
+                | forStmt
+                | ifStmt
                 | printStmt
+                | whileStmt
                 | block;
     exprStmt    → expression ";" ;
+    forStmt     → "for" "(" ( varDecl | exprStmt | ";" )
+                            expression? ";"
+                            expression? ")" statement ;
+    ifStmt      → "if" "(" expression ")" statement ( "else" statement )? ;
     printStmt   → "print" expression ";" ;
+    whileStmt   → "while" "(" expression ")" statement ;
     block       → "{" declaration* "}" ;
-     
+
+Expressions:
+
     expression  → comma ;
     comma       → assignment ( "," assignment )?
                 | assignment ;
     assignment  → identifier ( "=" assignment )?
                 | ternary ;
-    ternary     → equality ? true equality : false equality )*
-                | equality
+    ternary     → logic_or ? true logic_or : false logic_or )*
+                | logic_or ;
+    logic_or    → logic_and ( "or" logic_and )*
+    logic_and   → equality ( "and" equality )*
     equality    → comparison ( ( "!=" | "==" ) comparison )*
     comparison  → term ( ( ">" | ">=" | "<" | "<=" ) term )*
     term        → factor ( ( "-" | "+" ) factor )*
@@ -47,9 +61,9 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
     exponent    → unary ( ( "**" ) unary )*
     unary       → ( "!" | "-" | "+" ) unary
                 | ( "++" | "--" ) unary
-                | postfix
+                | postfix ;
     postfix     → postfix ( "++" | "--" )
-                | primary
+                | primary ;
     primary     → "true" | "false" | "none" | "this"
                 | NUMBER | STRING
                 | "(" expression ")"
@@ -61,17 +75,19 @@ Unary '+' operator is a syntax error.
 ## Rules
 ### Operator precedence (highest → lowest)
 
-    Name	    Operators	   Associates
-    Postfix     a++ a--        Left
-    Unary	    ! -	++a --a    Right
-    Exponent    **             Left
-    Factor	    / *	           Left
-    Term	    - +	           Left
-    Comparison  > >= < <=	   Left
-    Equality    == !=          Left
-    Ternary     ?:             Left
-    Assignment  =              Right
-    Comma       ,              Left
+    Name	      Operators	     Associates
+    Postfix       a++ a--        Left
+    Unary	      ! - ++a --a    Right
+    Exponent      **             Left
+    Factor	      / *            Left
+    Term	      - +            Left
+    Comparison    > >= < <=	     Left
+    Equality      == !=          Left
+    Logical And   and            Left
+    Logical Or    or             Left
+    Ternary       ?:             Left as PHP
+    Assignment    =              Right
+    Comma         ,              Left
 
 ### Truthyness
 Fail follows Ruby’s simple rule: false and none are falsey and everything else is truthy.

@@ -7,7 +7,7 @@ class RpnPrinter implements Expr.Visitor<String> {
 
     @Override
     public String visitAssignExpr(Expr.Assign expr) {
-        return null;
+        return postfix(expr.name+" =", expr.value);
     }
 
     @Override
@@ -22,7 +22,7 @@ class RpnPrinter implements Expr.Visitor<String> {
 
     @Override
     public String visitVariableExpr(Expr.Variable expr) {
-        return null;
+        return expr.name.lexeme;
     }
 
     @Override
@@ -33,6 +33,11 @@ class RpnPrinter implements Expr.Visitor<String> {
     @Override
     public String visitLiteralExpr(Expr.Literal expr) {
         return expr.value.toString();
+    }
+
+    @Override
+    public String visitLogicalExpr(Expr.Logical expr) {
+        return postfix(expr.operator.lexeme, expr.left, expr.right);
     }
 
     @Override

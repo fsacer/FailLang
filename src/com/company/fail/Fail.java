@@ -55,7 +55,6 @@ public class Fail {
             || x.type == TokenType.WHILE
             || x.type == TokenType.PRINT
             || x.type == TokenType.RETURN
-            || x.type == TokenType.IDENTIFIER
             || x.type == TokenType.LEFT_BRACE
             || x.type == TokenType.RIGHT_BRACE).count() == 0){
             Expr expr = parser.parseExpr();
