@@ -111,3 +111,4 @@ Additional features mostly based on tasks from book:
   to prevent accessing variable from outer scope during initializing
 - accept escape sequences
 - added comma operator
+- added operator overload for string multiplication ("abc" * 2 → "abcabc")

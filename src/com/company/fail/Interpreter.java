@@ -1,5 +1,6 @@
 package com.company.fail;
 
+import java.util.Collections;
 import java.util.List;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
@@ -233,6 +234,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 //if((double) right == 0) throw new RuntimeError(expr.operator, "Division by zero not allowed.");
                 return (double)left / (double)right;
             case STAR:
+                if(left instanceof Double && !(right instanceof Double)) {
+                    return multiplyString(stringify(right), (double)left, expr.operator);
+                }
+                if(!(left instanceof Double) && right instanceof Double) {
+                    return multiplyString(stringify(left), (double)right, expr.operator);
+                }
+
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left * (double)right;
             case STAR_STAR:
@@ -276,5 +284,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
 
         return object.toString();
+    }
+
+    private String multiplyString(String s, double n, Token token) {
+        if(n % 1 != 0) throw new RuntimeError(token,
+                "String multiplier must be an integer.");
+
+        return String.join("", Collections.nCopies((int) n, s));
     }
 }

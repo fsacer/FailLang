@@ -68,17 +68,20 @@ public class Fail {
         if (hadError) return;
 
         interpreter.interpret(statements);
+
 /*
+        //Print AST
         if (!hadError) {
             System.out.println(new AstPrinter().print(expression));
-        }v
-        */
+        }
+*/
+
 /*
         // For now, just print the tokens.
         for (Token token : tokens) {
             System.out.println(token);
         }
-        */
+*/
     }
 
     static void error(int line, String message) {
