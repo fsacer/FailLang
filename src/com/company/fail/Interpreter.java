@@ -9,6 +9,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     void interpret(Expr expression) {
         try {
             Object value = evaluate(expression);
+            if(value instanceof String) {
+                value = "\"" + value + "\"";
+            }
             System.out.println(stringify(value));
         } catch (RuntimeError error) {
             Fail.runtimeError(error);
@@ -289,7 +292,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private String multiplyString(String s, double n, Token token) {
         if(n % 1 != 0) throw new RuntimeError(token,
                 "String multiplier must be an integer.");
+        int multiplier = (int) n;
+        if(multiplier < 0) multiplier = 0;
 
-        return String.join("", Collections.nCopies((int) n, s));
+        return String.join("", Collections.nCopies(multiplier, s));
     }
 }
