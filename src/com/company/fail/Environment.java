@@ -5,9 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 class Environment {
-    final Environment enclosing;
+    private Environment enclosing;
     private final Map<String, Object> values = new HashMap<>();
-    private final Map<String, Boolean> assigned = new HashMap<>();
 
     Environment() {
         enclosing = null;
@@ -17,17 +16,12 @@ class Environment {
         this.enclosing = enclosing;
     }
 
-    void define(String name) {
-        values.put(name, null);
+    void define(String name, Object value) {
+        values.put(name, value);
     }
 
     Object get(Token name) {
-        if (values.containsKey(name.lexeme)) {
-            if(!assigned.containsKey(name.lexeme) || !assigned.get(name.lexeme)) {
-                throw new RuntimeError(name, "Unassigned variable '" + name.lexeme + "' accessed.");
-            }
-            return values.get(name.lexeme);
-        }
+        if (values.containsKey(name.lexeme)) return values.get(name.lexeme);
 
         if (enclosing != null) return enclosing.get(name);
 
@@ -38,7 +32,6 @@ class Environment {
     void assign(Token name, Object value) {
         if (values.containsKey(name.lexeme)) {
             values.put(name.lexeme, value);
-            assigned.put(name.lexeme, true);
             return;
         }
 

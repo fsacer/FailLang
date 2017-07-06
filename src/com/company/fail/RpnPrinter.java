@@ -7,7 +7,7 @@ class RpnPrinter implements Expr.Visitor<String> {
 
     @Override
     public String visitAssignExpr(Expr.Assign expr) {
-        return postfix(expr.name+" =", expr.value);
+        return postfix(expr.name + " =", expr.value);
     }
 
     @Override
@@ -69,5 +69,15 @@ class RpnPrinter implements Expr.Visitor<String> {
                         new Expr.Literal(45.67)));
 
         System.out.println(new RpnPrinter().print(expression));
+
+        Expr expression2 = new Expr.Binary(
+                new Expr.Assign(
+                        new Token(TokenType.IDENTIFIER, "a", null, 1),
+                        new Expr.Literal(1)),
+                new Token(TokenType.STAR, "*", null, 1),
+                new Expr.Literal("str")
+        );
+
+        System.out.println(new RpnPrinter().print(expression2));
     }
 }

@@ -51,6 +51,11 @@ var vehicle = ( ( arg == "B" ) ? "bus" :
                               "feet" );
 print vehicle;
 
+print "\nternary evaluation test (expected 1)";
+var i = 0;
+var j = i == 0 ? ++i : ++i;
+print i;
+
 print "\nbasic comma test returns 4 (last value)";
 var i = (1,2,4);
 print i;

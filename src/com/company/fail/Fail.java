@@ -10,8 +10,8 @@ import java.util.List;
 
 public class Fail {
     private static final Interpreter interpreter = new Interpreter();
-    static boolean hadError = false;
-    static boolean hadRuntimeError = false;
+    private static boolean hadError = false;
+    private static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
@@ -34,10 +34,36 @@ public class Fail {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
-        for (;;) {
-            System.out.print("> ");
-            run(reader.readLine());
+        for (; ; ) {
             hadError = false;
+
+            System.out.print("> ");
+            Scanner scanner = new Scanner(reader.readLine());
+            List<Token> tokens = scanner.scanTokens();
+            Parser parser = new Parser(tokens);
+
+            if (tokens.stream().filter(
+                    x -> x.type == TokenType.SEMICOLON
+                            || x.type == TokenType.CLASS
+                            || x.type == TokenType.FUN
+                            || x.type == TokenType.VAR
+                            || x.type == TokenType.FOR
+                            || x.type == TokenType.IF
+                            || x.type == TokenType.WHILE
+                            || x.type == TokenType.BREAK
+                            || x.type == TokenType.CONTINUE
+                            || x.type == TokenType.PRINT
+                            || x.type == TokenType.RETURN
+                            || x.type == TokenType.LEFT_BRACE
+                            || x.type == TokenType.RIGHT_BRACE).count() == 0) {
+                Expr expr = parser.parseExpr();
+                if (hadError) continue;
+                interpreter.interpret(expr);
+            } else {
+                List<Stmt> statements = parser.parse();
+                if (hadError) continue;
+                interpreter.interpret(statements);
+            }
         }
     }
 
@@ -45,23 +71,6 @@ public class Fail {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
-        if(tokens.stream().filter(
-            x -> x.type == TokenType.SEMICOLON
-            || x.type == TokenType.CLASS
-            || x.type == TokenType.FUN
-            || x.type == TokenType.VAR
-            || x.type == TokenType.FOR
-            || x.type == TokenType.IF
-            || x.type == TokenType.WHILE
-            || x.type == TokenType.PRINT
-            || x.type == TokenType.RETURN
-            || x.type == TokenType.LEFT_BRACE
-            || x.type == TokenType.RIGHT_BRACE).count() == 0){
-            Expr expr = parser.parseExpr();
-            if(hadError) return;
-            interpreter.interpret(expr);
-            return;
-        }
         List<Stmt> statements = parser.parse();
 
         // Stop if there was a syntax error.

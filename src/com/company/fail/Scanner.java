@@ -17,20 +17,22 @@ class Scanner {
 
     static {
         keywords = new HashMap<>();
-        keywords.put("and",    AND);
-        keywords.put("class",  CLASS);
-        keywords.put("else",   ELSE);
-        keywords.put("false",  FALSE);
-        keywords.put("for",    FOR);
-        keywords.put("fun",    FUN);
-        keywords.put("if",     IF);
-        keywords.put("none",   NONE);
-        keywords.put("or",     OR);
-        keywords.put("print",  PRINT);
-        keywords.put("this",   THIS);
-        keywords.put("true",   TRUE);
-        keywords.put("var",    VAR);
-        keywords.put("while",  WHILE);
+        keywords.put("and", AND);
+        keywords.put("class", CLASS);
+        keywords.put("else", ELSE);
+        keywords.put("false", FALSE);
+        keywords.put("for", FOR);
+        keywords.put("fun", FUN);
+        keywords.put("if", IF);
+        keywords.put("none", NONE);
+        keywords.put("or", OR);
+        keywords.put("print", PRINT);
+        keywords.put("this", THIS);
+        keywords.put("true", TRUE);
+        keywords.put("var", VAR);
+        keywords.put("while", WHILE);
+        keywords.put("break", BREAK);
+        keywords.put("continue", CONTINUE);
     }
 
     Scanner(String source) {
@@ -62,50 +64,76 @@ class Scanner {
     private void scanToken() {
         char c = advance();
         switch (c) {
-            case '(': addToken(LEFT_PAREN); break;
-            case ')': addToken(RIGHT_PAREN); break;
-            case '{': addToken(LEFT_BRACE); break;
-            case '}': addToken(RIGHT_BRACE); break;
-            case ',': addToken(COMMA); break;
-            case '.': addToken(DOT); break;
+            case '(':
+                addToken(LEFT_PAREN);
+                break;
+            case ')':
+                addToken(RIGHT_PAREN);
+                break;
+            case '{':
+                addToken(LEFT_BRACE);
+                break;
+            case '}':
+                addToken(RIGHT_BRACE);
+                break;
+            case ',':
+                addToken(COMMA);
+                break;
+            case '.':
+                addToken(DOT);
+                break;
             case '-':
-                if(match('-'))
+                if (match('-'))
                     addToken(MINUS_MINUS);
                 else
                     addToken(MINUS);
                 break;
             case '+':
-                if(match('+'))
+                if (match('+'))
                     addToken(PLUS_PLUS);
                 else
                     addToken(PLUS);
                 break;
-            case ';': addToken(SEMICOLON); break;
-            case ':': addToken(COLON); break;
-            case '?': addToken(QUESTION_MARK); break;
+            case ';':
+                addToken(SEMICOLON);
+                break;
+            case ':':
+                addToken(COLON);
+                break;
+            case '?':
+                addToken(QUESTION_MARK);
+                break;
             case '*':
-                if(match('*'))
+                if (match('*'))
                     addToken(STAR_STAR);
                 else
                     addToken(STAR);
                 break;
-            case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
-            case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
-            case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
-            case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
+            case '!':
+                addToken(match('=') ? BANG_EQUAL : BANG);
+                break;
+            case '=':
+                addToken(match('=') ? EQUAL_EQUAL : EQUAL);
+                break;
+            case '<':
+                addToken(match('=') ? LESS_EQUAL : LESS);
+                break;
+            case '>':
+                addToken(match('=') ? GREATER_EQUAL : GREATER);
+                break;
             case '/':
                 if (match('/')) {
                     // A comment goes until the end of the line.
                     while (peek() != '\n' && !isAtEnd()) advance();
-                } else if(match('*')){
+                } else if (match('*')) {
                     int toMatch = 1;
                     while (!isAtEnd()) {
-                        if(peek() == '*' && peekNext() == '/') toMatch--;
-                        if(peek() == '/' && peekNext() == '*') toMatch++;
-                        if(toMatch == 0) break;
+                        if (peek() == '*' && peekNext() == '/') toMatch--;
+                        if (peek() == '/' && peekNext() == '*') toMatch++;
+                        if (toMatch == 0) break;
                         advance();
                     }
-                    if(peek() == '*' && peekNext() == '/') {
+                    if (peek() == '*' && peekNext() == '/') {
                         advance();
                         advance();
                     } else {
@@ -126,14 +154,16 @@ class Scanner {
                 line++;
                 break;
 
-            case '"': string(); break;
+            case '"':
+                string();
+                break;
 
             default:
                 if (isDigit(c)) {
                     number();
                 } else if (isAlpha(c)) {
                     identifier();
-                }  else {
+                } else {
                     Fail.error(line, "Unexpected character.");
                 }
                 break;

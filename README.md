@@ -9,7 +9,7 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
 ## Keywords
 ### Constructs
 - if, else
-- for, while
+- for, while (break, continue)
 - fun
 - class (this, super)
 
@@ -41,13 +41,14 @@ Statements:
     ifStmt      → "if" "(" expression ")" statement ( "else" statement )? ;
     printStmt   → "print" expression ";" ;
     whileStmt   → "while" "(" expression ")" statement ;
+    breakStmt   → "break" ";" ;
+    continueStmt   → "continue" ";" ;
     block       → "{" declaration* "}" ;
 
 Expressions:
 
     expression  → comma ;
-    comma       → assignment ( "," assignment )?
-                | assignment ;
+    comma       → assignment ( "," assignment )*
     assignment  → identifier ( "=" assignment )?
                 | ternary ;
     ternary     → logic_or ? true logic_or : false logic_or )*
@@ -59,18 +60,23 @@ Expressions:
     term        → factor ( ( "-" | "+" ) factor )*
     factor      → exponent ( ( "/" | "*" ) exponent )*
     exponent    → unary ( ( "**" ) unary )*
-    unary       → ( "!" | "-" | "+" ) unary
-                | ( "++" | "--" ) unary
+    unary       → ( "!" | "-" | "++" | "--" ) unary
                 | postfix ;
-    postfix     → postfix ( "++" | "--" )
-                | primary ;
-    primary     → "true" | "false" | "none" | "this"
-                | NUMBER | STRING
+    postfix     → primary ( "++" | "--" )*
+    primary     → NUMBER | STRING | "true" | "false" | "none"
+                | IDENTIFIER
                 | "(" expression ")"
-                | IDENTIFIER ;
+                // Error productions...
+                | ( "!=" | "==" ) equality
+                | ( ">" | ">=" | "<" | "<=" ) comparison
+                | ( "+" ) term
+                | ( "/" | "*" ) factor
+                | ("**") unary;
                
 ### Notes
-Unary '+' operator is a syntax error.
+Unary '+' operator is not supported.
+
+Currently continue statement does not work as expected for for loops, incrementors must be manually incremented.
 
 ## Rules
 ### Operator precedence (highest → lowest)

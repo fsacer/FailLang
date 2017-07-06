@@ -5,11 +5,12 @@ import java.util.List;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private Environment environment = new Environment();
+    private static Object uninitialized = new Object();
 
     void interpret(Expr expression) {
         try {
             Object value = evaluate(expression);
-            if(value instanceof String) {
+            if (value instanceof String) {
                 value = "\"" + value + "\"";
             }
             System.out.println(stringify(value));
@@ -28,29 +29,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
     }
 
-    @Override
-    public Object visitLiteralExpr(Expr.Literal expr) {
-        return expr.value;
-    }
-
-    @Override
-    public Object visitLogicalExpr(Expr.Logical expr) {
-        Object left = evaluate(expr.left);
-
-        if (expr.operator.type == TokenType.OR) {
-            if (isTruthy(left)) return left;
-        } else {
-            if (!isTruthy(left)) return left;
-        }
-
-        return evaluate(expr.right);
-    }
-
-    @Override
-    public Object visitGroupingExpr(Expr.Grouping expr) {
-        return evaluate(expr.expression);
-    }
-
     private Object evaluate(Expr expr) {
         return expr.accept(this);
     }
@@ -59,13 +37,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         stmt.accept(this);
     }
 
-    @Override
-    public Void visitBlockStmt(Stmt.Block stmt) {
-        executeBlock(stmt.statements, new Environment(environment));
-        return null;
-    }
-
-    void executeBlock(List<Stmt> statements, Environment environment) {
+    private void executeBlock(List<Stmt> statements, Environment environment) {
         Environment previous = this.environment;
         try {
             this.environment = environment;
@@ -76,6 +48,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         } finally {
             this.environment = previous;
         }
+    }
+
+    @Override
+    public Void visitBlockStmt(Stmt.Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
     }
 
     @Override
@@ -103,19 +81,25 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitVarStmt(Stmt.Var stmt) {
-        environment.define(stmt.name.lexeme);
+        Object value = uninitialized;
         if (stmt.initializer != null) {
-            Object value = evaluate(stmt.initializer);
-            environment.assign(stmt.name, value);
+            value = evaluate(stmt.initializer);
         }
 
+        environment.define(stmt.name.lexeme, value);
         return null;
     }
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
         while (isTruthy(evaluate(stmt.condition))) {
-            execute(stmt.body);
+            try {
+                execute(stmt.body);
+            } catch (BreakJump breakJump) {
+                break;
+            } catch (ContinueJump continueJump) {
+                //Do nothing.
+            }
         }
         return null;
     }
@@ -128,6 +112,106 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitBinaryExpr(Expr.Binary expr) {
+        Object left = evaluate(expr.left);
+        Object right = evaluate(expr.right);
+
+        switch (expr.operator.type) {
+            case GREATER:
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left > (double) right;
+            case GREATER_EQUAL:
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left >= (double) right;
+            case LESS:
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left < (double) right;
+            case LESS_EQUAL:
+                return (double) left <= (double) right;
+            case BANG_EQUAL:
+                return !isEqual(left, right);
+            case EQUAL_EQUAL:
+                return isEqual(left, right);
+            case MINUS:
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left - (double) right;
+            case PLUS:
+                if (left instanceof Double && right instanceof Double) {
+                    return (double) left + (double) right;
+                }
+
+                if (left instanceof String && right instanceof String) {
+                    return (String) left + (String) right;
+                }
+
+                /* converting everything to string
+                if(left instanceof String || right instanceof String) {
+                    return stringify(left) + stringify(right);
+                }
+                */
+
+                throw new RuntimeError(expr.operator,
+                        "Operands must be two numbers or two strings.");
+            case SLASH:
+                checkNumberOperands(expr.operator, left, right);
+                //code to prevent division by zero
+                //if ((double) right == 0) throw new RuntimeError(expr.operator, "Division by zero not allowed.");
+                return (double) left / (double) right;
+            case STAR:
+                if (left instanceof Double && !(right instanceof Double)) {
+                    return multiplyString(stringify(right), (double) left, expr.operator);
+                }
+                if (!(left instanceof Double) && right instanceof Double) {
+                    return multiplyString(stringify(left), (double) right, expr.operator);
+                }
+
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left * (double) right;
+            case STAR_STAR:
+                checkNumberOperands(expr.operator, left, right);
+                return Math.pow((double) left, (double) right);
+            case COMMA:
+                return right;
+        }
+
+        // Unreachable.
+        return null;
+    }
+
+    @Override
+    public Object visitGroupingExpr(Expr.Grouping expr) {
+        return evaluate(expr.expression);
+    }
+
+    @Override
+    public Object visitLiteralExpr(Expr.Literal expr) {
+        return expr.value;
+    }
+
+    @Override
+    public Object visitLogicalExpr(Expr.Logical expr) {
+        Object left = evaluate(expr.left);
+
+        if (expr.operator.type == TokenType.OR) {
+            if (isTruthy(left)) return left;
+        } else {
+            if (!isTruthy(left)) return left;
+        }
+
+        return evaluate(expr.right);
+    }
+
+    @Override
+    public Void visitBreakStmt(Stmt.Break stmt) {
+        throw new BreakJump();
+    }
+
+    @Override
+    public Void visitContinueStmt(Stmt.Continue stmt) {
+        throw new ContinueJump();
+    }
+
+    @Override
     public Object visitUnaryExpr(Expr.Unary expr) {
         Object right = evaluate(expr.right);
 
@@ -136,30 +220,32 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 return !isTruthy(right);
             case MINUS:
                 checkNumberOperand(expr.operator, right);
-                return -(double)right;
+                return -(double) right;
             case PLUS_PLUS: {
                 checkNumberOperand(expr.operator, right);
                 double value = (double) right;
-                if (expr.postfix) {
-                    if(expr.right instanceof Expr.Variable) {
-                        Expr.Variable variable = (Expr.Variable) expr.right;
-                        environment.assign(variable.name, value + 1);
-                    }
-                    return value;
+
+                if (expr.right instanceof Expr.Variable) {
+                    Expr.Variable variable = (Expr.Variable) expr.right;
+                    environment.assign(variable.name, value + 1);
                 }
+
+                if (expr.postfix)
+                    return value;
                 else
                     return value + 1;
             }
             case MINUS_MINUS: {
                 checkNumberOperand(expr.operator, right);
                 double value = (double) right;
-                if (expr.postfix) {
-                    if (expr.right instanceof Expr.Variable) {
-                        Expr.Variable variable = (Expr.Variable) expr.right;
-                        environment.assign(variable.name, value - 1);
-                    }
-                    return value;
+
+                if (expr.right instanceof Expr.Variable) {
+                    Expr.Variable variable = (Expr.Variable) expr.right;
+                    environment.assign(variable.name, value - 1);
                 }
+
+                if (expr.postfix)
+                    return value;
                 else
                     return value - 1;
             }
@@ -171,12 +257,27 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        return environment.get(expr.name);
+        Object value = environment.get(expr.name);
+        if (value == uninitialized) {
+            throw new RuntimeError(expr.name,
+                    "Variable must be initialized before use.");
+        }
+        return value;
+    }
+
+    @Override
+    public Object visitTernaryExpr(Expr.Ternary expr) {
+        Object check = evaluate(expr.expr);
+
+        if (isTruthy(check))
+            return evaluate(expr.trueExpr);
+        else
+            return evaluate(expr.falseExpr);
     }
 
     private boolean isTruthy(Object object) {
         if (object == null) return false;
-        if (object instanceof Boolean) return (boolean)object;
+        if (object instanceof Boolean) return (boolean) object;
         return true;
     }
 
@@ -192,86 +293,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         throw new RuntimeError(operator, "Operands must be numbers.");
     }
 
-    @Override
-    public Object visitBinaryExpr(Expr.Binary expr) {
-        Object left = evaluate(expr.left);
-        Object right = evaluate(expr.right);
-
-        switch (expr.operator.type) {
-            case GREATER:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left > (double)right;
-            case GREATER_EQUAL:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left >= (double)right;
-            case LESS:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left < (double)right;
-            case LESS_EQUAL:
-                return (double)left <= (double)right;
-            case BANG_EQUAL: return !isEqual(left, right);
-            case EQUAL_EQUAL: return isEqual(left, right);
-            case MINUS:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left - (double)right;
-            case PLUS:
-                if (left instanceof Double && right instanceof Double) {
-                    return (double)left + (double)right;
-                }
-
-                if (left instanceof String && right instanceof String) {
-                    return (String)left + (String)right;
-                }
-
-                /* converting everything to string
-                if(left instanceof String || right instanceof String) {
-                    return stringify(left) + stringify(right);
-                }
-                */
-
-                throw new RuntimeError(expr.operator,
-                        "Operands must be two numbers or two strings.");
-            case SLASH:
-                checkNumberOperands(expr.operator, left, right);
-                //code to prevent division by zero
-                //if((double) right == 0) throw new RuntimeError(expr.operator, "Division by zero not allowed.");
-                return (double)left / (double)right;
-            case STAR:
-                if(left instanceof Double && !(right instanceof Double)) {
-                    return multiplyString(stringify(right), (double)left, expr.operator);
-                }
-                if(!(left instanceof Double) && right instanceof Double) {
-                    return multiplyString(stringify(left), (double)right, expr.operator);
-                }
-
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left * (double)right;
-            case STAR_STAR:
-                checkNumberOperands(expr.operator, left, right);
-                return Math.pow((double)left, (double)right);
-            case COMMA:
-                return right;
-        }
-
-        // Unreachable.
-        return null;
-    }
-
     private boolean isEqual(Object a, Object b) {
         // none is only equal to none.
         return a == null && b == null || a != null && a.equals(b);
-    }
-
-    @Override
-    public Object visitTernaryExpr(Expr.Ternary expr) {
-        Object check = evaluate(expr.expr);
-        Object trueExpr = evaluate(expr.trueExpr);
-        Object falseExpr = evaluate(expr.falseExpr);
-
-        if(isTruthy(check))
-            return trueExpr;
-        else
-            return falseExpr;
     }
 
     private String stringify(Object object) {
@@ -290,10 +314,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     private String multiplyString(String s, double n, Token token) {
-        if(n % 1 != 0) throw new RuntimeError(token,
+        if (n % 1 != 0) throw new RuntimeError(token,
                 "String multiplier must be an integer.");
         int multiplier = (int) n;
-        if(multiplier < 0) multiplier = 0;
+        if (multiplier < 0) multiplier = 0;
 
         return String.join("", Collections.nCopies(multiplier, s));
     }
