@@ -85,9 +85,10 @@ d++, f++;
 print d;
 print f;
 
-print "\nfor loop complex (to ten - zero and one based):";
+print "\nfor loop complex (to ten - zero and one based), skips 2 using if:";
 for(var i = 0, j = 1; i < 10; i++, j++) {
-    print j;
+    if (j != 2)
+        print j;
 }
 
 print "\nFibonacci (first 21):";
@@ -100,3 +101,19 @@ while (a < 10000) {
   a = b;
   b = temp + b;
 }
+
+print "\ndo-while should print hello once:";
+do {
+    print "hello";
+} while (false);
+
+print "\ndo-while should print hello twice:";
+var i = 0;
+do {
+    print "hello";
+    i++;
+} while (i < 2);
+
+print "\nshorthand += prints 3:";
+var x = 1;
+print x += 2;
