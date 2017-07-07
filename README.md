@@ -24,26 +24,27 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
 ## Grammar
 Statements:
    
-    program     → declaration* EOF ;
-    declaration → varDecl
-                | statement ;
-    varDecl     → "var" IDENTIFIER ( "=" expression )? ";" ;
-    statement   → exprStmt
-                | forStmt
-                | ifStmt
-                | printStmt
-                | whileStmt
-                | block;
-    exprStmt    → expression ";" ;
-    forStmt     → "for" "(" ( varDecl | exprStmt | ";" )
-                            expression? ";"
-                            expression? ")" statement ;
-    ifStmt      → "if" "(" expression ")" statement ( "else" statement )? ;
-    printStmt   → "print" expression ";" ;
-    whileStmt   → "while" "(" expression ")" statement ;
-    breakStmt   → "break" ";" ;
-    continueStmt   → "continue" ";" ;
-    block       → "{" declaration* "}" ;
+    program      → declaration* EOF ;
+    declaration  → varDecl
+                 | statement ;
+    varDecl      → "var" IDENTIFIER ( "=" expression )? ";" ;
+    statement    → exprStmt
+                 | forStmt
+                 | ifStmt
+                 | printStmt
+                 | whileStmt
+                 | block;
+    exprStmt     → expression ";" ;
+    forStmt      → "for" "(" ( varDecl | exprStmt | ";" )
+                             expression? ";"
+                             expression? ")" statement ;
+    ifStmt       → "if" "(" expression ")" statement ( "else" statement )? ;
+    printStmt    → "print" expression ";" ;
+    doWhileStmt  → "do" statement "while" "(" expression ")" ";" ;
+    whileStmt    → "while" "(" expression ")" statement ;
+    breakStmt    → "break" ";" ;
+    continueStmt → "continue" ";" ;
+    block        → "{" declaration* "}" ;
 
 Expressions:
 
@@ -118,3 +119,5 @@ Additional features mostly based on tasks from book:
 - accept escape sequences
 - added comma operator
 - added operator overload for string multiplication ("abc" * 2 → "abcabc")
+- added break and continue
+- added do-while statement

@@ -59,6 +59,7 @@ class Parser {
         if (match(FOR)) return forStatement();
         if (match(IF)) return ifStatement();
         if (match(PRINT)) return printStatement();
+        if (match(DO)) return doWhileStatement();
         if (match(WHILE)) return whileStatement();
         if (match(BREAK)) return breakStatement();
         if (match(CONTINUE)) return continueStatement();
@@ -157,6 +158,26 @@ class Parser {
 
         consume(SEMICOLON, "Expect ';' after variable declaration.");
         return lst;
+    }
+
+    private Stmt doWhileStatement() {
+        try {
+            loopLevel++;
+            Stmt body = statement();
+            consume(WHILE, "Expect 'while' in a do-while loop.");
+            consume(LEFT_PAREN, "Expect '(' after 'while'.");
+            Expr condition = expression();
+            consume(RIGHT_PAREN, "Expect ')' after condition.");
+            consume(SEMICOLON, "Expect ';' after do-while statement.");
+
+            body = new Stmt.Block(Arrays.asList(
+                    body,
+                    new Stmt.While(condition, body)));
+
+            return body;
+        } finally {
+            loopLevel--;
+        }
     }
 
     private Stmt whileStatement() {
