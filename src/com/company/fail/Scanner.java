@@ -85,16 +85,14 @@ class Scanner {
                 addToken(DOT);
                 break;
             case '-':
-                if (match('-'))
-                    addToken(MINUS_MINUS);
-                else
-                    addToken(MINUS);
+                addToken(match('-') ? MINUS_MINUS :
+                        match('=') ? MINUS_EQUAL :
+                                MINUS);
                 break;
             case '+':
-                if (match('+'))
-                    addToken(PLUS_PLUS);
-                else
-                    addToken(PLUS);
+                addToken(match('+') ? PLUS_PLUS :
+                        match('=') ? PLUS_EQUAL :
+                                PLUS);
                 break;
             case ';':
                 addToken(SEMICOLON);
@@ -106,10 +104,9 @@ class Scanner {
                 addToken(QUESTION_MARK);
                 break;
             case '*':
-                if (match('*'))
-                    addToken(STAR_STAR);
-                else
-                    addToken(STAR);
+                addToken(match('*') ? match('=') ? STAR_STAR_EQUAL :
+                        STAR_STAR :
+                        STAR);
                 break;
             case '!':
                 addToken(match('=') ? BANG_EQUAL : BANG);
@@ -141,6 +138,8 @@ class Scanner {
                     } else {
                         Fail.error(line, "No closing of block comment.");
                     }
+                } else if (match('=')) {
+                    addToken(SLASH_EQUAL);
                 } else {
                     addToken(SLASH);
                 }

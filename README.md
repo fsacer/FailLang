@@ -9,7 +9,7 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
 ## Keywords
 ### Constructs
 - if, else
-- for, while (break, continue)
+- for, while, do-while (break, continue)
 - fun
 - class (this, super)
 
@@ -50,7 +50,7 @@ Expressions:
 
     expression  → comma ;
     comma       → assignment ( "," assignment )*
-    assignment  → identifier ( "=" assignment )?
+    assignment  → identifier ( ( "=" | "+=" | "-=" | "*=" | "/=" | "**=" ) assignment )?
                 | ternary ;
     ternary     → logic_or ? true logic_or : false logic_or )*
                 | logic_or ;
@@ -82,19 +82,19 @@ Currently continue statement does not work as expected for for loops, incremento
 ## Rules
 ### Operator precedence (highest → lowest)
 
-    Name	      Operators	     Associates
-    Postfix       a++ a--        Left
-    Unary	      ! - ++a --a    Right
-    Exponent      **             Left
-    Factor	      / *            Left
-    Term	      - +            Left
-    Comparison    > >= < <=	     Left
-    Equality      == !=          Left
-    Logical And   and            Left
-    Logical Or    or             Left
-    Ternary       ?:             Left as PHP
-    Assignment    =              Right
-    Comma         ,              Left
+    Name	      Operators	               Associates
+    Postfix       a++ a--                  Left
+    Unary	      ! - ++a --a              Right
+    Exponent      **                       Left
+    Factor	      / *                      Left
+    Term	      - +                      Left
+    Comparison    > >= < <=	               Left
+    Equality      == !=                    Left
+    Logical And   and                      Left
+    Logical Or    or                       Left
+    Ternary       ?:                       Left as PHP
+    Assignment    =, +=, -=, /=, *=, **=   Right
+    Comma         ,                        Left
 
 ### Truthyness
 Fail follows Ruby’s simple rule: false and none are falsey and everything else is truthy.
@@ -121,3 +121,4 @@ Additional features mostly based on tasks from book:
 - added operator overload for string multiplication ("abc" * 2 → "abcabc")
 - added break and continue
 - added do-while statement
+- added shorthand assignment operators +=, -=, *=, /=, **=

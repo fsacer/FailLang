@@ -107,6 +107,40 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
+        switch (expr.equals.type) {
+            case EQUAL:
+                break;
+            case PLUS_EQUAL: {
+                Object current = environment.get(expr.name);
+                checkNumberOperands(expr.equals, current, value);
+                value = (double) current + (double) value;
+                break;
+            }
+            case MINUS_EQUAL: {
+                Object current = environment.get(expr.name);
+                checkNumberOperands(expr.equals, current, value);
+                value = (double) current - (double) value;
+                break;
+            }
+            case STAR_EQUAL: {
+                Object current = environment.get(expr.name);
+                checkNumberOperands(expr.equals, current, value);
+                value = (double) current * (double) value;
+                break;
+            }
+            case SLASH_EQUAL: {
+                Object current = environment.get(expr.name);
+                checkNumberOperands(expr.equals, current, value);
+                value = (double) current / (double) value;
+                break;
+            }
+            case STAR_STAR_EQUAL: {
+                Object current = environment.get(expr.name);
+                checkNumberOperands(expr.equals, current, value);
+                value = Math.pow((double) current, (double) value);
+                break;
+            }
+        }
         environment.assign(expr.name, value);
         return value;
     }
