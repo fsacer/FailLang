@@ -41,7 +41,7 @@ var a = 1;
 }
 */
 
-print "\nternary associativity test returns horse because of left-associativity";
+print "\nternary associativity test should return train";
 var arg = "T";
 var vehicle = ( ( arg == "B" ) ? "bus" :
              ( arg == "A" ) ? "airplane" :

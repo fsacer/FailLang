@@ -21,7 +21,7 @@ class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitTernaryExpr(Expr.Ternary expr) {
-        return parenthesize(expr.operator.lexeme, expr.expr, expr.trueExpr, expr.falseExpr);
+        return parenthesize("?", expr.expr, expr.thenBranch, expr.elseBranch);
     }
 
     @Override

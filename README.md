@@ -52,8 +52,7 @@ Expressions:
     comma       → assignment ( "," assignment )*
     assignment  → identifier ( ( "=" | "+=" | "-=" | "*=" | "/=" | "**=" ) assignment )?
                 | ternary ;
-    ternary     → logic_or ? true logic_or : false logic_or )*
-                | logic_or ;
+    ternary     → logic_or ( "?" expression ":" ternary )?
     logic_or    → logic_and ( "or" logic_and )*
     logic_and   → equality ( "and" equality )*
     equality    → comparison ( ( "!=" | "==" ) comparison )*
@@ -92,7 +91,7 @@ Currently continue statement does not work as expected for for loops, incremento
     Equality      == !=                    Left
     Logical And   and                      Left
     Logical Or    or                       Left
-    Ternary       ?:                       Left as PHP
+    Ternary       ?:                       Right
     Assignment    =, +=, -=, /=, *=, **=   Right
     Comma         ,                        Left
 

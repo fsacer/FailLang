@@ -260,12 +260,11 @@ class Parser {
     private Expr ternary() {
         Expr expr = or();
 
-        while (match(QUESTION_MARK)) {
-            Token operator = previous();
-            Expr right = or();
-            consume(COLON, "Missing ':' in ternary expression.");
-            Expr rightRight = or();
-            expr = new Expr.Ternary(operator, expr, right, rightRight);
+        if (match(QUESTION_MARK)) {
+            Expr thenBranch = expression();
+            consume(COLON, "Expect ':' after then branch of ternary expression.");
+            Expr elseBranch = ternary();
+            expr = new Expr.Ternary(expr, thenBranch, elseBranch);
         }
 
         return expr;

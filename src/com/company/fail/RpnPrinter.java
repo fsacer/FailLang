@@ -17,7 +17,7 @@ class RpnPrinter implements Expr.Visitor<String> {
 
     @Override
     public String visitTernaryExpr(Expr.Ternary expr) {
-        return postfix(expr.operator.lexeme, expr.expr, expr.trueExpr, expr.falseExpr);
+        return postfix("?", expr.expr, expr.thenBranch, expr.elseBranch);
     }
 
     @Override

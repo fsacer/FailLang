@@ -304,9 +304,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         Object check = evaluate(expr.expr);
 
         if (isTruthy(check))
-            return evaluate(expr.trueExpr);
+            return evaluate(expr.thenBranch);
         else
-            return evaluate(expr.falseExpr);
+            return evaluate(expr.elseBranch);
     }
 
     private boolean isTruthy(Object object) {
