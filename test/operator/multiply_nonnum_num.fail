@@ -1,0 +1,4 @@
+print "1" * 1; // expect: 1
+print "st" * 0; // expect:
+print "ab" * 3; // expect: ababab
+print "ab" * -3; // expect:

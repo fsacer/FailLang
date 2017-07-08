@@ -1,0 +1,13 @@
+var i = 0;
+while (i < 3) {
+    if (i == 1)
+    {
+       i++;
+       continue;
+    }
+    print i;
+    i++;
+}
+
+// expect: 0
+// expect: 2

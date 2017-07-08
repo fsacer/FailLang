@@ -1,0 +1,2 @@
+var None = none;
+class Foo < None {} // expect runtime error: Superclass must be a class.

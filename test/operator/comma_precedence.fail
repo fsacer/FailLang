@@ -1,0 +1,4 @@
+var a=1, b=2, c=3;
+var i;
+i = a = a + 2, a + b;
+print i; // expect: 3

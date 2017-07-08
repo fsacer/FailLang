@@ -1,0 +1,12 @@
+var arg = "T";
+var vehicle = ( ( arg == "B" ) ? "bus" :
+             ( arg == "A" ) ? "airplane" :
+             ( arg == "T" ) ? "train" :
+             ( arg == "C" ) ? "car" :
+             ( arg == "H" ) ? "horse" :
+                              "feet" );
+print vehicle; // expect: train
+
+var i = 0;
+var j = i == 0 ? ++i : ++i;
+print i; // expect: 1

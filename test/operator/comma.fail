@@ -1,0 +1,14 @@
+// basic comma test returns 4 (last value)
+var i = (1,2,4);
+print i; // expect: 4
+
+// var comma test (assigns all values and uses last val 2)
+var a=1, b=2, c=3;
+var j = (a, b);
+print a; // expect: 1
+print b; // expect: 2
+print c; // expect: 3
+print j; // expect: 2
+
+// prints the last value (6)
+print a = 4, b = 5, c = 6; // expect: 6

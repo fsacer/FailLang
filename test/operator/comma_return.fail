@@ -1,0 +1,5 @@
+fun last() {
+    return (1), 2, 3;
+}
+
+last(); // expect: 3

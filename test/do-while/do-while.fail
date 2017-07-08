@@ -1,0 +1,12 @@
+do {
+    print "hello";
+} while (false);
+// expect: hello
+
+var i = 0;
+do {
+    print "hello";
+    i++;
+} while (i < 2);
+// expect: hello
+// expect: hello

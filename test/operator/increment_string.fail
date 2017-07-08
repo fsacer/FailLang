@@ -1,0 +1,1 @@
+print "a"++; // expect runtime error: Operand of an increment operator must be a variable.

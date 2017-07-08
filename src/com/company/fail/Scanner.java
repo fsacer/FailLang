@@ -104,9 +104,9 @@ class Scanner {
                 addToken(QUESTION_MARK);
                 break;
             case '*':
-                addToken(match('*') ? match('=') ? STAR_STAR_EQUAL :
-                        STAR_STAR :
-                        STAR);
+                addToken(match('*') ?
+                        match('=') ? STAR_STAR_EQUAL : STAR_STAR :
+                        match('=') ? STAR_EQUAL : STAR);
                 break;
             case '!':
                 addToken(match('=') ? BANG_EQUAL : BANG);

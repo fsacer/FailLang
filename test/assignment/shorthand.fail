@@ -1,0 +1,10 @@
+var x = 1;
+print x += 2; // expect: 3
+x = 3;
+print x /= 3; // expect: 1
+x = 1;
+print x -= (-2); // expect: 3
+x = 3;
+print x *= 2; // expect: 6
+x = 3;
+print x **= 2; // expect: 9
