@@ -274,7 +274,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             case MINUS_MINUS: {
                 if (!(expr.right instanceof Expr.Variable))
                     throw new RuntimeError(expr.operator,
-                            "Operand of an decrement operator must be a variable.");
+                            "Operand of a decrement operator must be a variable.");
 
                 checkNumberOperand(expr.operator, right);
                 double value = (double) right;

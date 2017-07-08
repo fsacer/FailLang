@@ -1,1 +1,1 @@
-1--; // expect runtime error: Operand of an decrement operator must be a variable.
+1--; // expect runtime error: Operand of a decrement operator must be a variable.
