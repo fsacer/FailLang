@@ -129,6 +129,7 @@ class Scanner {
                     while (!isAtEnd()) {
                         if (peek() == '*' && peekNext() == '/') toMatch--;
                         if (peek() == '/' && peekNext() == '*') toMatch++;
+                        if (peek() == '\n') line++;
                         if (toMatch == 0) break;
                         advance();
                     }

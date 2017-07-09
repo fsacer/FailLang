@@ -71,7 +71,7 @@ Expressions:
                 | ( ">" | ">=" | "<" | "<=" ) comparison
                 | ( "+" ) term
                 | ( "/" | "*" ) factor
-                | ("**") unary;
+                | ("**") exponent;
                
 ### Notes
 Unary '+' operator is not supported.
@@ -113,8 +113,8 @@ Additional features mostly based on tasks from book:
 - ternary operator
 - exponent operator
 - prevent access to unassigned variables (no implicit initialization to none)
-- changed the order of var assignment (first definition of variable with none and then assignment)
-  to prevent accessing variable from outer scope during initializing
+~~- changed the order of var assignment (first definition of variable with none and then assignment)
+  to prevent accessing variable from outer scope during initializing~~ (will be fixed at later stage)
 - accept escape sequences
 - added comma operator
 - added operator overload for string multiplication ("abc" * 2 → "abcabc")

@@ -130,6 +130,7 @@ java_interpreter('chap08_statements', {
   'test/regression/40.fail': 'skip',
   'test/return': 'skip',
   'test/unexpected_character.fail': 'skip',
+  'test/operator/comma_return.fail': 'skip',
 
   # Broken because we haven't fixed it yet by detecting the error.
   'test/return/at_top_level.fail': 'skip',

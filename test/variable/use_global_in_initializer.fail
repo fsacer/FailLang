@@ -1,3 +1,5 @@
 var a = "value";
 var a = a;
 print a; // expect: value
+
+// needs to be changed to err: "Cannot read local variable in its own initializer." as in use_local_in_initializer.
