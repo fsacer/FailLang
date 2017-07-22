@@ -6,6 +6,7 @@ import java.util.List;
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private Environment environment = new Environment();
     private static Object uninitialized = new Object();
+    private boolean preventAssignment = false;
 
     void interpret(Expr expression) {
         try {
@@ -64,7 +65,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitIfStmt(Stmt.If stmt) {
-        if (isTruthy(evaluate(stmt.condition))) {
+        Object condition;
+        try {
+            preventAssignment = true;
+            condition = evaluate(stmt.condition);
+        } finally {
+            preventAssignment = false;
+        }
+        if (isTruthy(condition)) {
             execute(stmt.thenBranch);
         } else if (stmt.elseBranch != null) {
             execute(stmt.elseBranch);
@@ -92,20 +100,29 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
-        while (isTruthy(evaluate(stmt.condition))) {
-            try {
-                execute(stmt.body);
-            } catch (BreakJump breakJump) {
-                break;
-            } catch (ContinueJump continueJump) {
-                //Do nothing.
+        try {
+            preventAssignment = true;
+            while (isTruthy(evaluate(stmt.condition))) {
+                preventAssignment = false;
+                try {
+                    execute(stmt.body);
+                } catch (BreakJump breakJump) {
+                    break;
+                } catch (ContinueJump continueJump) {
+                    //Do nothing.
+                }
             }
+        } finally {
+            preventAssignment = false;
         }
         return null;
     }
 
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
+        if (preventAssignment)
+            throw new RuntimeError(expr.equals, "Assignment is not allowed within if, loop or ternary condition.");
+
         Object value = evaluate(expr.value);
         switch (expr.equals.type) {
             case EQUAL:
@@ -254,6 +271,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             case BANG:
                 return !isTruthy(right);
             case MINUS:
+                if("muffin".equals(stringify(right))) {
+                    throw new RuntimeError(expr.operator, "I don't know, man, can you negate a muffin?");
+                }
                 checkNumberOperand(expr.operator, right);
                 return -(double) right;
             case PLUS_PLUS: {
@@ -304,7 +324,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitTernaryExpr(Expr.Ternary expr) {
+        preventAssignment = true;
         Object check = evaluate(expr.expr);
+        preventAssignment = false;
 
         if (isTruthy(check))
             return evaluate(expr.thenBranch);

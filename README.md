@@ -121,3 +121,4 @@ Additional features mostly based on tasks from book:
 - added break and continue
 - added do-while statement
 - added shorthand assignment operators +=, -=, *=, /=, **=
+- added prevention of assignment inside if, loop and ternary condition expressions (currently as runtime exception, considering doing that at parse time)
