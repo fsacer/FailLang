@@ -23,6 +23,30 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 return (double)System.currentTimeMillis() / 1000.0;
             }
         });
+        globals.define("len", new Callable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter,
+                               List<Object> arguments) {
+                return stringify(arguments.get(0)).length();
+            }
+        });
+        globals.define("str", new Callable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter,
+                               List<Object> arguments) {
+                return stringify(arguments.get(0));
+            }
+        });
     }
 
     void interpret(Expr expression) {
