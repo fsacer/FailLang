@@ -20,8 +20,28 @@ class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     }
 
     @Override
+    public String visitFunctionExpr(Expr.Function expr) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(fun (");
+
+        for (Token param : expr.parameters) {
+            if (param != expr.parameters.get(0)) builder.append(" ");
+            builder.append(param.lexeme);
+        }
+
+        builder.append(") ");
+
+        for (Stmt body : expr.body) {
+            builder.append(body.accept(this));
+        }
+
+        builder.append(")");
+        return builder.toString();
+    }
+
+    @Override
     public String visitCallExpr(Expr.Call expr) {
-        return print(expr.callee);
+        return parenthesize2("call", expr.callee, expr.arguments);
     }
 
     @Override
@@ -75,7 +95,22 @@ class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitFunctionStmt(Stmt.Function stmt) {
-        return stmt.name.lexeme + "()";
+        StringBuilder builder = new StringBuilder();
+        builder.append("(fun " + stmt.name.lexeme + "(");
+
+        for (Token param : stmt.function.parameters) {
+            if (param != stmt.function.parameters.get(0)) builder.append(" ");
+            builder.append(param.lexeme);
+        }
+
+        builder.append(") ");
+
+        for (Stmt body : stmt.function.body) {
+            builder.append(body.accept(this));
+        }
+
+        builder.append(")");
+        return builder.toString();
     }
 
     @Override
@@ -91,6 +126,11 @@ class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     @Override
     public String visitPrintStmt(Stmt.Print stmt) {
         return parenthesize("print", stmt.expression);
+    }
+
+    @Override
+    public String visitReturnStmt(Stmt.Return stmt) {
+        return parenthesize("return", stmt.value);
     }
 
     @Override

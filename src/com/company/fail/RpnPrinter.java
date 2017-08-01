@@ -16,6 +16,11 @@ class RpnPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitFunctionExpr(Expr.Function expr) {
+        return "lambda";
+    }
+
+    @Override
     public String visitCallExpr(Expr.Call expr) {
         return print(expr.callee);
     }

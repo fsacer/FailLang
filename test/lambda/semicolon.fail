@@ -1,0 +1,2 @@
+// [line 2] Error at end: Expect ';' after expression.
+fun () {}

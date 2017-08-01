@@ -14,3 +14,38 @@ fun sayHi(first, last) {
 }
 
 sayHi("Dear", "Reader");
+
+print "\nAgain fibonacci, but recursive:";
+fun fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 2) + fibonacci(n - 1);
+}
+for (var i = 0; i < 21; i = i + 1) {
+  print fibonacci(i);
+}
+
+print "\nClosure:";
+fun makePoint(x, y) {
+  fun closure(method) {
+    if (method == "x") return x;
+    if (method == "y") return y;
+    print "unknown method " + method;
+  }
+
+  return closure;
+}
+
+var point = makePoint(2, 3);
+print point("x"); // "2".
+print point("y"); // "3".
+
+print "\nLambda:";
+fun thrice(fn) {
+  for (var i = 1; i <= 3; i = i + 1) {
+    fn(i);
+  }
+}
+
+thrice(fun (a) {
+  print a;
+});

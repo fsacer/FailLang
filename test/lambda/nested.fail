@@ -1,0 +1,11 @@
+fun (y){
+    var r = 1;
+    r++;
+    var f = fun(y) {
+        print y;
+    }(y);
+    print r;
+}(1);
+
+// expect: 1
+// expect: 2

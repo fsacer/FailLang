@@ -1,0 +1,5 @@
+var run = true;
+while(run) {
+    fun() {};
+    run = false;
+}

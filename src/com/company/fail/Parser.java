@@ -41,8 +41,11 @@ class Parser {
     private List<Stmt> declarations() {
         List<Stmt> lst = new ArrayList<>();
         try {
-            if (match(FUN)) lst.add(function("function"));
-            if (match(VAR)) lst.addAll(varDeclarations());
+            if (check(FUN) && checkNext(IDENTIFIER)) {
+                consume(FUN, null);
+                lst.add(function("function"));
+            }
+            else if (match(VAR)) lst.addAll(varDeclarations());
             else lst.add(statement());
 
             return lst;
@@ -74,6 +77,10 @@ class Parser {
 
     private Stmt.Function function(String kind) {
         Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+        return new Stmt.Function(name, functionBody(kind));
+    }
+
+    private Expr.Function functionBody(String kind) {
         consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
         List<Token> parameters = new ArrayList<>();
         if (!check(RIGHT_PAREN)) {
@@ -89,13 +96,14 @@ class Parser {
 
         consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
         List<Stmt> body = block();
-        return new Stmt.Function(name, parameters, body);
+        return new Expr.Function(parameters, body);
     }
 
     private Stmt statement() {
         if (match(FOR)) return forStatement();
         if (match(IF)) return ifStatement();
         if (match(PRINT)) return printStatement();
+        if (match(RETURN)) return returnStatement();
         if (match(DO)) return doWhileStatement();
         if (match(WHILE)) return whileStatement();
         if (match(BREAK)) return breakStatement();
@@ -181,6 +189,17 @@ class Parser {
         Expr value = expression();
         consume(SEMICOLON, "Expect ';' after value.");
         return new Stmt.Print(value);
+    }
+
+    private Stmt returnStatement() {
+        Token keyword = previous();
+        Expr value = null;
+        if (!check(SEMICOLON)) {
+            value = expression();
+        }
+
+        consume(SEMICOLON, "Expect ';' after return value.");
+        return new Stmt.Return(keyword, value);
     }
 
     private Stmt doWhileStatement() {
@@ -430,12 +449,16 @@ class Parser {
     }
 
     private Expr primary() {
-        if (match(FALSE)) return new Expr.Literal(false);
-        if (match(TRUE)) return new Expr.Literal(true);
-        if (match(NONE)) return new Expr.Literal(null);
-
         if (match(NUMBER, STRING)) {
             return new Expr.Literal(previous().literal);
+        }
+
+        if (match(TRUE)) return new Expr.Literal(true);
+        if (match(FALSE)) return new Expr.Literal(false);
+        if (match(NONE)) return new Expr.Literal(null);
+        if (check(FUN) && !checkNext(IDENTIFIER)) {
+            advance();
+            return functionBody("function");
         }
 
         if (match(IDENTIFIER)) {
@@ -495,7 +518,6 @@ class Parser {
         throw error(peek(), message);
     }
 
-
     private boolean check(TokenType tokenType) {
         if (isAtEnd()) return false;
         return peek().type == tokenType;
@@ -503,9 +525,9 @@ class Parser {
 
     private boolean checkNext(TokenType tokenType) {
         if (isAtEnd()) return false;
-        return peekNext().type == tokenType;
+        if (tokens.get(current + 1).type == EOF) return false;
+        return tokens.get(current + 1).type == tokenType;
     }
-
 
     private Token advance() {
         if (!isAtEnd()) current++;
@@ -518,10 +540,6 @@ class Parser {
 
     private Token peek() {
         return tokens.get(current);
-    }
-
-    private Token peekNext() {
-        return tokens.get(current + 1);
     }
 
     private Token previous() {

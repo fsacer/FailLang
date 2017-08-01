@@ -28,9 +28,7 @@ Statements:
     declaration  → funDecl
                  | varDecl
                  | statement ;
-    funDecl      → "fun" function ;
-    function     → IDENTIFIER "(" parameters? ")" block ;
-    parameters → IDENTIFIER ( "," IDENTIFIER )* ;
+    funDecl      → "fun" IDENTIFIER functionBody ;
     varDecl      → "var" IDENTIFIER ( "=" expression )? ";" ;
     statement    → exprStmt
                  | forStmt
@@ -70,6 +68,7 @@ Expressions:
     postfix     → primary ( "++" | "--" )* | call ;
     call        → primary ( "(" arguments? ")" )* ;
     primary     → NUMBER | STRING | "true" | "false" | "none"
+                | lambda
                 | IDENTIFIER
                 | "(" expression ")"
                 // Error productions...
@@ -81,7 +80,10 @@ Expressions:
                 
 Other:
 
-    arguments   → expression ( "," expression )* ;
+    arguments    → expression ( "," expression )* ;
+    parameters   → IDENTIFIER ( "," IDENTIFIER )* ;
+    functionBody → "(" parameters? ")" block ;
+    lambda       → "fun" functionBody ;
                
 ### Notes
 Unary '+' operator is not supported.
@@ -133,3 +135,4 @@ Additional features mostly based on tasks from book:
 - added do-while statement
 - added shorthand assignment operators +=, -=, *=, /=, **=
 - added prevention of assignment inside if, loop and ternary condition expressions (currently as runtime exception, considering doing that at parse time)
+- added lambdas
