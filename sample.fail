@@ -8,3 +8,9 @@ while (a < 10000) {
   a = b;
   b = temp + b;
 }
+
+fun sayHi(first, last) {
+  print "Hi, " + first + " " + last + "!";
+}
+
+sayHi("Dear", "Reader");

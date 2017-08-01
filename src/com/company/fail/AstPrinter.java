@@ -20,6 +20,11 @@ class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     }
 
     @Override
+    public String visitCallExpr(Expr.Call expr) {
+        return print(expr.callee);
+    }
+
+    @Override
     public String visitTernaryExpr(Expr.Ternary expr) {
         return parenthesize("?", expr.expr, expr.thenBranch, expr.elseBranch);
     }
@@ -66,6 +71,11 @@ class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     @Override
     public String visitExpressionStmt(Stmt.Expression stmt) {
         return parenthesize(";", stmt.expression);
+    }
+
+    @Override
+    public String visitFunctionStmt(Stmt.Function stmt) {
+        return stmt.name.lexeme + "()";
     }
 
     @Override

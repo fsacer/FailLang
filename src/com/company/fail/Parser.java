@@ -38,13 +38,10 @@ class Parser {
         return statements;
     }
 
-    private Expr expression() {
-        return comma();
-    }
-
     private List<Stmt> declarations() {
         List<Stmt> lst = new ArrayList<>();
         try {
+            if (match(FUN)) lst.add(function("function"));
             if (match(VAR)) lst.addAll(varDeclarations());
             else lst.add(statement());
 
@@ -53,6 +50,46 @@ class Parser {
             synchronize();
             return null;
         }
+    }
+
+    private List<Stmt> varDeclarations() {
+        List<Stmt> lst = new ArrayList<>();
+        Token name = consume(IDENTIFIER, "Expect variable name.");
+
+        Expr initializer = null;
+        if (match(EQUAL)) {
+            initializer = assignment();
+        }
+        lst.add(new Stmt.Var(name, initializer));
+        while (match(COMMA)) {
+            name = consume(IDENTIFIER, "Expect variable name.");
+            consume(EQUAL, "Expect assignment in multiple variable declaration.");
+            initializer = assignment();
+            lst.add(new Stmt.Var(name, initializer));
+        }
+
+        consume(SEMICOLON, "Expect ';' after variable declaration.");
+        return lst;
+    }
+
+    private Stmt.Function function(String kind) {
+        Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+        consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+        List<Token> parameters = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 8) {
+                    error(peek(), "Cannot have more than 8 parameters.");
+                }
+
+                parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+            } while (match(COMMA));
+        }
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+        consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        List<Stmt> body = block();
+        return new Stmt.Function(name, parameters, body);
     }
 
     private Stmt statement() {
@@ -66,6 +103,12 @@ class Parser {
         if (match(LEFT_BRACE)) return new Stmt.Block(block());
 
         return expressionStatement();
+    }
+
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        consume(SEMICOLON, "Expect ';' after expression.");
+        return new Stmt.Expression(expr);
     }
 
     //using desugaring technique
@@ -140,26 +183,6 @@ class Parser {
         return new Stmt.Print(value);
     }
 
-    private List<Stmt> varDeclarations() {
-        List<Stmt> lst = new ArrayList<>();
-        Token name = consume(IDENTIFIER, "Expect variable name.");
-
-        Expr initializer = null;
-        if (match(EQUAL)) {
-            initializer = assignment();
-        }
-        lst.add(new Stmt.Var(name, initializer));
-        while (match(COMMA)) {
-            name = consume(IDENTIFIER, "Expect variable name.");
-            consume(EQUAL, "Expect assignment in multiple variable declaration.");
-            initializer = assignment();
-            lst.add(new Stmt.Var(name, initializer));
-        }
-
-        consume(SEMICOLON, "Expect ';' after variable declaration.");
-        return lst;
-    }
-
     private Stmt doWhileStatement() {
         try {
             loopLevel++;
@@ -207,12 +230,6 @@ class Parser {
         return new Stmt.Continue();
     }
 
-    private Stmt expressionStatement() {
-        Expr expr = expression();
-        consume(SEMICOLON, "Expect ';' after expression.");
-        return new Stmt.Expression(expr);
-    }
-
     private List<Stmt> block() {
         List<Stmt> statements = new ArrayList<>();
 
@@ -225,6 +242,12 @@ class Parser {
 
         consume(RIGHT_BRACE, "Expect '}' after block.");
         return statements;
+    }
+
+    // --exprs:
+
+    private Expr expression() {
+        return comma();
     }
 
     private Expr comma() {
@@ -251,7 +274,7 @@ class Parser {
                 return new Expr.Assign(name, value, equals);
             }
 
-            throw error(equals, "Invalid assignment target.");
+            error(equals, "Invalid assignment target.");
         }
 
         return expr;
@@ -373,7 +396,37 @@ class Parser {
             return new Expr.Unary(operator, left, true);
         }
 
-        return primary();
+        return call();
+    }
+
+    private Expr call() {
+        Expr expr = primary();
+
+        while (true) {
+            if (match(LEFT_PAREN)) {
+                expr = finishCall(expr);
+            } else {
+                break;
+            }
+        }
+
+        return expr;
+    }
+
+    private Expr finishCall(Expr callee) {
+        List<Expr> arguments = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (arguments.size() >= 8) {
+                    error(peek(), "Cannot have more than 8 arguments.");
+                }
+                arguments.add(assignment());
+            } while (match(COMMA));
+        }
+
+        Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+
+        return new Expr.Call(callee, paren, arguments);
     }
 
     private Expr primary() {

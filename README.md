@@ -25,13 +25,18 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
 Statements:
    
     program      → declaration* EOF ;
-    declaration  → varDecl
+    declaration  → funDecl
+                 | varDecl
                  | statement ;
+    funDecl      → "fun" function ;
+    function     → IDENTIFIER "(" parameters? ")" block ;
+    parameters → IDENTIFIER ( "," IDENTIFIER )* ;
     varDecl      → "var" IDENTIFIER ( "=" expression )? ";" ;
     statement    → exprStmt
                  | forStmt
                  | ifStmt
                  | printStmt
+                 | returnStmt
                  | whileStmt
                  | block;
     exprStmt     → expression ";" ;
@@ -62,7 +67,8 @@ Expressions:
     exponent    → unary ( ( "**" ) unary )*
     unary       → ( "!" | "-" | "++" | "--" ) unary
                 | postfix ;
-    postfix     → primary ( "++" | "--" )*
+    postfix     → primary ( "++" | "--" )* | call ;
+    call        → primary ( "(" arguments? ")" )* ;
     primary     → NUMBER | STRING | "true" | "false" | "none"
                 | IDENTIFIER
                 | "(" expression ")"
@@ -72,6 +78,10 @@ Expressions:
                 | ( "+" ) term
                 | ( "/" | "*" ) factor
                 | ("**") exponent;
+                
+Other:
+
+    arguments   → expression ( "," expression )* ;
                
 ### Notes
 Unary '+' operator is not supported.
@@ -82,6 +92,7 @@ Currently continue statement does not work as expected for for loops, incremento
 ### Operator precedence (highest → lowest)
 
     Name	      Operators	               Associates
+    Call          a()                      Left
     Postfix       a++ a--                  Left
     Unary	      ! - ++a --a              Right
     Exponent      **                       Left
