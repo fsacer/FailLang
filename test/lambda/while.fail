@@ -1,5 +1,8 @@
-var run = true;
-while(run) {
-    fun() {};
-    run = false;
+var i = 0;
+while(i++ < 3) {
+    fun() { print i; }();
 }
+
+// expect: 1
+// expect: 2
+// expect: 3

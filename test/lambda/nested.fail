@@ -1,11 +1,14 @@
+var g = 3;
 fun (y){
     var r = 1;
     r++;
     var f = fun(y) {
         print y;
+        print r;
+        print g;
     }(y);
-    print r;
 }(1);
 
 // expect: 1
 // expect: 2
+// expect: 3

@@ -1,0 +1,4 @@
+x(1); // expect runtime error: Undefined variable 'x'.
+fun x (y) {
+    print y;
+}
