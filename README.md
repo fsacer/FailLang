@@ -119,6 +119,22 @@ Fail follows Ruby’s simple rule: false and none are falsey and everything else
     \n – newline
     \t – tab
 
+## Data types
+Variables can change it's data type at runtime as in Python. Data types are implied from expressions. 
+### Built-in data types
+- Boolean: true, false, and, or
+- string
+- number (`double` precision)
+- none - a null pointer
+### User defined data types
+Those can be defined via `class`keyword.
+
+## Standard library
+### Global functions
+- `clock()` - Gets the difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC. Then it changes milliseconds to seconds as a floating point value.
+- `len(x)` - This function changes input to a string and gets its length.
+- `str(x)` - Changes input to its string representation.
+
 ## Added features
 Additional features mostly based on tasks from book:
 - multiline comments
