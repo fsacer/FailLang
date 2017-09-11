@@ -38,8 +38,7 @@ public class Fail {
             hadError = false;
 
             System.out.print("> ");
-            Scanner scanner = new Scanner(reader.readLine());
-            List<Token> tokens = scanner.scanTokens();
+            List<Token> tokens = runScanner(reader.readLine());
             Parser parser = new Parser(tokens);
 
             if (tokens.stream().filter(
@@ -62,22 +61,22 @@ public class Fail {
             } else {
                 List<Stmt> statements = parser.parse();
                 if (hadError) continue;
+                runResolver(statements);
+                if (hadError) continue;
                 interpreter.interpret(statements);
             }
         }
     }
 
     private static void run(String source) {
-        Scanner scanner = new Scanner(source);
-        List<Token> tokens = scanner.scanTokens();
+        List<Token> tokens = runScanner(source);
         Parser parser = new Parser(tokens);
         List<Stmt> statements = parser.parse();
 
         // Stop if there was a syntax error.
         if (hadError) return;
 
-        Resolver resolver = new Resolver(interpreter);
-        resolver.resolve(statements);
+        runResolver(statements);
 
         // Stop if there was a resolution error.
         if (hadError) return;
@@ -97,6 +96,16 @@ public class Fail {
             System.out.println(token);
         }
 */
+    }
+
+    private static List<Token> runScanner(String source) {
+        Scanner scanner = new Scanner(source);
+        return scanner.scanTokens();
+    }
+
+    private static void runResolver(List<Stmt> statements) {
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
     }
 
     static void error(int line, String message) {
