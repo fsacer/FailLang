@@ -259,6 +259,7 @@ java_interpreter('chap10_functions', {
   'test/variable/duplicate_local.fail': 'skip',
   'test/variable/duplicate_parameter.fail': 'skip',
   'test/variable/early_bound.fail': 'skip',
+  'test/lambda/binding.fail': 'skip',
 
   # No classes.
   'test/assignment/to_this.fail': 'skip',

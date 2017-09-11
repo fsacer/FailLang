@@ -24,6 +24,21 @@ for (var i = 0; i < 21; i = i + 1) {
   print fibonacci(i);
 }
 
+print "\nLocal function:";
+fun makeCounter() {
+  var i = 0;
+  fun count() {
+    i = i + 1;
+    print i;
+  }
+
+  return count;
+}
+
+var counter = makeCounter();
+counter(); // "1".
+counter(); // "2".
+
 print "\nClosure:";
 fun makePoint(x, y) {
   fun closure(method) {
@@ -49,3 +64,15 @@ fun thrice(fn) {
 thrice(fun (a) {
   print a;
 });
+
+print "\nbinding test:";
+var a = "global";
+{
+  fun showA() {
+    print a;
+  }
+
+  showA();
+  var a = "block";
+  showA();
+}
