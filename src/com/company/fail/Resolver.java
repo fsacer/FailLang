@@ -9,7 +9,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private final Interpreter interpreter;
     private final Stack<Map<String, Boolean>> scopes = new Stack<>();
     private FunctionType currentFunction = FunctionType.NONE;
-
+    private boolean preventAssignment = false;
 
     Resolver(Interpreter interpreter) {
         this.interpreter = interpreter;
@@ -51,7 +51,9 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitIfStmt(Stmt.If stmt) {
+        preventAssignment = true;
         resolve(stmt.condition);
+        preventAssignment = false;
         resolve(stmt.thenBranch);
         if (stmt.elseBranch != null) resolve(stmt.elseBranch);
         return null;
@@ -88,7 +90,9 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
+        preventAssignment = true;
         resolve(stmt.condition);
+        preventAssignment = false;
         resolve(stmt.body);
         return null;
     }
@@ -117,6 +121,9 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitAssignExpr(Expr.Assign expr) {
+        if (preventAssignment)
+            Fail.error(expr.equals, "Assignment is not allowed within if, loop or ternary condition.");
+
         resolve(expr.value);
         resolveLocal(expr, expr.name);
         return null;
@@ -182,7 +189,9 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitTernaryExpr(Expr.Ternary expr) {
+        preventAssignment = true;
         resolve(expr.expr);
+        preventAssignment = false;
         resolve(expr.thenBranch);
         resolve(expr.elseBranch);
         return null;

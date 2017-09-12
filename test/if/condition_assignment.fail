@@ -1,0 +1,3 @@
+// Assignment in if condition.
+var a = false;
+if (a = true) print a; // Error at '=': Assignment is not allowed within if, loop or ternary condition.
