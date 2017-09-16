@@ -145,10 +145,11 @@ Additional features mostly based on tasks from book:
 ~~- changed the order of var assignment (first definition of variable with none and then assignment)
   to prevent accessing variable from outer scope during initializing~~ (will be fixed at later stage)
 - accept escape sequences
-- added comma operator
-- added operator overload for string multiplication ("abc" * 2 → "abcabc")
-- added break and continue
-- added do-while statement
-- added shorthand assignment operators +=, -=, *=, /=, **=
-- added prevention of assignment inside if, loop and ternary condition expressions (currently as runtime exception, considering doing that at parse time)
-- added lambdas
+- comma operator
+- operator overload for string multiplication ("abc" * 2 → "abcabc")
+- break and continue
+- do-while statement
+- shorthand assignment operators +=, -=, *=, /=, **=
+- prevention of assignment inside if, loop and ternary condition expressions (currently as runtime exception, considering doing that at parse time)
+- lambdas
+- warnings, if local variable is unused

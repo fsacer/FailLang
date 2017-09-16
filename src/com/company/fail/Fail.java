@@ -109,10 +109,10 @@ public class Fail {
     }
 
     static void error(int line, String message) {
-        report(line, "", message);
+        reportError(line, "", message);
     }
 
-    static private void report(int line, String where, String message) {
+    static private void reportError(int line, String where, String message) {
         System.err.println(
                 "[line " + line + "] Error" + where + ": " + message);
         hadError = true;
@@ -120,9 +120,27 @@ public class Fail {
 
     static void error(Token token, String message) {
         if (token.type == TokenType.EOF) {
-            report(token.line, " at end", message);
+            reportError(token.line, " at end", message);
         } else {
-            report(token.line, " at '" + token.lexeme + "'", message);
+            reportError(token.line, " at '" + token.lexeme + "'", message);
+        }
+    }
+
+    static private void reportWarning(int line, String where, String message) {
+        System.err.println(
+                "[line " + line + "] Warning" + where + ": " + message);
+        System.err.flush();
+    }
+
+    static void warning(int line, String message) {
+        reportWarning(line, "", message);
+    }
+
+    static void warning(Token token, String message) {
+        if (token.type == TokenType.EOF) {
+            reportWarning(token.line, " at end", message);
+        } else {
+            reportWarning(token.line, " at '" + token.lexeme + "'", message);
         }
     }
 

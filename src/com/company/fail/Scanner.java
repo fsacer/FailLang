@@ -8,7 +8,7 @@ import java.util.Map;
 import static com.company.fail.TokenType.*;
 
 class Scanner {
-    private final String source;
+    private final StringBuilder source;
     private final List<Token> tokens = new ArrayList<>();
     private int start = 0;
     private int current = 0;
@@ -39,14 +39,7 @@ class Scanner {
     }
 
     Scanner(String source) {
-        //handle escape sequences
-        this.source = source
-                .replace("\\\"", "\"")
-                .replace("\\\\", "\\")
-                .replace("\\b", "\b")
-                .replace("\\r", "\r")
-                .replace("\\n", "\n")
-                .replace("\\t", "\t");
+        this.source = new StringBuilder(source);
     }
 
     List<Token> scanTokens() {
@@ -207,7 +200,32 @@ class Scanner {
 
     private void string() {
         while (peek() != '"' && !isAtEnd()) {
-            if (peek() == '\n') line++;
+            char first = peek();
+            if (first == '\n') line++;
+
+            //handle escape sequences
+            if(first == '\\'){
+                char second = peekNext();
+                if (second == '\"') {
+                    source.deleteCharAt(current);
+                    source.setCharAt(current, '\"');
+                } else if (second == '\\') {
+                    source.deleteCharAt(current);
+                    source.setCharAt(current, '\\');
+                } else if (second == 'b') {
+                    source.deleteCharAt(current);
+                    source.setCharAt(current, '\b');
+                } else if (second == 'r') {
+                    source.deleteCharAt(current);
+                    source.setCharAt(current, '\r');
+                } else if (second == 'n') {
+                    source.deleteCharAt(current);
+                    source.setCharAt(current, '\n');
+                } else if (second == 't') {
+                    source.deleteCharAt(current);
+                    source.setCharAt(current, '\t');
+                }
+            }
             advance();
         }
 

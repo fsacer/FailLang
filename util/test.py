@@ -17,6 +17,7 @@ ERROR_EXPECT = re.compile(r'// (Error.*)')
 ERROR_LINE_EXPECT = re.compile(r'// \[((java|c) )?line (\d+)\] (Error.*)')
 RUNTIME_ERROR_EXPECT = re.compile(r'// expect runtime error: (.+)')
 SYNTAX_ERROR_RE = re.compile(r'\[.*line (\d+)\] (Error.+)')
+SYNTAX_WARN_RE = re.compile(r'\[.*line (\d+)\] (Warning.+)')
 STACK_TRACE_RE = re.compile(r'\[line (\d+)\]')
 NONTEST_RE = re.compile(r'// nontest')
 
@@ -795,6 +796,8 @@ class Test:
 
 
   def validate_runtime_error(self, error_lines):
+    error_lines = [x for x in error_lines if not SYNTAX_WARN_RE.search(x)] # filter out warnings
+
     if len(error_lines) < 2:
       self.fail('Expected runtime error "{0}" and got none.',
           self.runtime_error_message)
@@ -835,9 +838,10 @@ class Test:
     found_errors = set()
     num_unexpected = 0
     for line in error_lines:
-      match = SYNTAX_ERROR_RE.search(line)
-      if match:
-        error = "[{0}] {1}".format(match.group(1), match.group(2))
+      match_err = SYNTAX_ERROR_RE.search(line)
+      match_warn = SYNTAX_WARN_RE.search(line)
+      if match_err:
+        error = "[{0}] {1}".format(match_err.group(1), match_err.group(2))
         if error in self.compile_errors:
           found_errors.add(error)
         else:
@@ -845,6 +849,9 @@ class Test:
             self.fail('Unexpected error:')
             self.fail(line)
           num_unexpected += 1
+      elif match_warn:
+        # Ignore the warnings
+        continue
       elif line != '':
         if num_unexpected < 10:
           self.fail('Unexpected output on stderr:')
