@@ -132,7 +132,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
                     "Cannot read local variable in its own initializer.");
         }
 
-        resolveLocal(expr, expr.name, true);
+        resolveReference(expr, expr.name, true);
         return null;
     }
 
@@ -142,7 +142,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             Fail.error(expr.equals, "Assignment is not allowed within if, loop or ternary condition.");
 
         resolve(expr.value);
-        resolveLocal(expr, expr.name, false);
+        resolveReference(expr, expr.name, false);
         return null;
     }
 
@@ -267,7 +267,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         scopes.peek().get(name.lexeme).state = VariableState.DEFINED;
     }
 
-    private void resolveLocal(Expr expr, Token name, boolean isRead) {
+    private void resolveReference(Expr expr, Token name, boolean isRead) {
         for (int i = scopes.size() - 1; i >= 0; i--) {
             if (scopes.get(i).containsKey(name.lexeme)) {
                 interpreter.resolve(expr, scopes.size() - 1 - i);
@@ -281,5 +281,6 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         }
 
         // Not found. Assume it is global.
+        interpreter.resolve(expr, scopes.size());
     }
 }

@@ -122,12 +122,12 @@ Fail follows Ruby’s simple rule: false and none are falsey and everything else
 ## Data types
 Variables can change it's data type at runtime as in Python. Data types are implied from expressions. 
 ### Built-in data types
-- Boolean: true, false, and, or
+- Boolean: true or false
 - string
 - number (`double` precision)
 - none - a null pointer
 ### User defined data types
-Those can be defined via `class`keyword.
+Those can be defined via `class` keyword.
 
 ## Standard library
 ### Global functions
@@ -142,14 +142,12 @@ Additional features mostly based on tasks from book:
 - ternary operator
 - exponent operator
 - prevent access to unassigned variables (no implicit initialization to none)
-~~- changed the order of var assignment (first definition of variable with none and then assignment)
-  to prevent accessing variable from outer scope during initializing~~ (will be fixed at later stage)
 - accept escape sequences
 - comma operator
 - operator overload for string multiplication ("abc" * 2 → "abcabc")
 - break and continue
 - do-while statement
 - shorthand assignment operators +=, -=, *=, /=, **=
-- prevention of assignment inside if, loop and ternary condition expressions (currently as runtime exception, considering doing that at parse time)
+- prevention of assignment inside if, loop and ternary condition expressions
 - lambdas
 - warnings, if local variable is unused

@@ -204,12 +204,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
 
         Integer distance = locals.get(expr);
-        if (distance != null) {
-            environment.assignAt(distance, expr.name, value);
-        } else {
-            globals.assign(expr.name, value);
-        }
-
+        environment.ancestor(distance).assign(expr.name, value);
         return value;
     }
 
@@ -399,11 +394,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         Integer distance = locals.get(expr);
         Object value;
 
-        if (distance != null) {
-            value = environment.getAt(distance, name.lexeme);
-        } else {
-            value = globals.get(name);
-        }
+        value = environment.ancestor(distance).get(name);
 
         if (value == uninitialized) {
             throw new RuntimeError(name,

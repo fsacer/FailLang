@@ -20,22 +20,12 @@ class Environment {
         values.put(name, value);
     }
 
-    Object getAt(int distance, String name) {
+    Environment ancestor(int n) {
         Environment environment = this;
-        for (int i = 0; i < distance; i++) {
+        for (int i = 0; i < n; i++) {
             environment = environment.enclosing;
         }
-
-        return environment.values.get(name);
-    }
-
-    void assignAt(int distance, Token name, Object value) {
-        Environment environment = this;
-        for (int i = 0; i < distance; i++) {
-            environment = environment.enclosing;
-        }
-
-        environment.values.put(name.lexeme, value);
+        return environment;
     }
 
     Object get(Token name) {
