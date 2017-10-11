@@ -34,49 +34,55 @@ public class Fail {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
-        for (; ; ) {
+        for (;;) {
             hadError = false;
 
             System.out.print("> ");
-            List<Token> tokens = runScanner(reader.readLine());
-            Parser parser = new Parser(tokens);
+            Scanner scanner = new Scanner(reader.readLine());
+            List<Token> tokens = scanner.scanTokens();
 
-            if (tokens.stream().filter(
-                    x -> x.type == TokenType.SEMICOLON
-                            || x.type == TokenType.CLASS
-                            || x.type == TokenType.FUN
-                            || x.type == TokenType.VAR
-                            || x.type == TokenType.FOR
-                            || x.type == TokenType.IF
-                            || x.type == TokenType.WHILE
-                            || x.type == TokenType.BREAK
-                            || x.type == TokenType.CONTINUE
-                            || x.type == TokenType.PRINT
-                            || x.type == TokenType.RETURN
-                            || x.type == TokenType.LEFT_BRACE
-                            || x.type == TokenType.RIGHT_BRACE).count() == 0) {
-                Expr expr = parser.parseExpr();
+            Parser parser = new Parser(tokens);
+            Object syntax = parser.parseRepl();
+
+            // Ignore it if there was a syntax error.
+            if (hadError) continue;
+
+            if (syntax instanceof List) {
+                List<Stmt> statements = (List<Stmt>)syntax;
+                Resolver resolver = new Resolver(interpreter);
+                resolver.resolve(statements);
+
+                // Stop if there was a resolution error.
                 if (hadError) continue;
-                interpreter.interpret(expr);
-            } else {
-                List<Stmt> statements = parser.parse();
-                if (hadError) continue;
-                runResolver(statements);
-                if (hadError) continue;
+
                 interpreter.interpret(statements);
+            } else if (syntax instanceof Expr) {
+                Expr expr = (Expr)syntax;
+                Resolver resolver = new Resolver(interpreter);
+                resolver.resolve(expr);
+
+                // Stop if there was a resolution error.
+                if (hadError) continue;
+
+                String result = interpreter.interpret(expr);
+                if (result != null) {
+                    System.out.println("= " + result);
+                }
             }
         }
     }
 
     private static void run(String source) {
-        List<Token> tokens = runScanner(source);
+        Scanner scanner = new Scanner(source);
+        List<Token> tokens =  scanner.scanTokens();
         Parser parser = new Parser(tokens);
         List<Stmt> statements = parser.parse();
 
         // Stop if there was a syntax error.
         if (hadError) return;
 
-        runResolver(statements);
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
 
         // Stop if there was a resolution error.
         if (hadError) return;
@@ -96,16 +102,6 @@ public class Fail {
             System.out.println(token);
         }
 */
-    }
-
-    private static List<Token> runScanner(String source) {
-        Scanner scanner = new Scanner(source);
-        return scanner.scanTokens();
-    }
-
-    private static void runResolver(List<Stmt> statements) {
-        Resolver resolver = new Resolver(interpreter);
-        resolver.resolve(statements);
     }
 
     static void error(int line, String message) {

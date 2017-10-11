@@ -3,7 +3,7 @@ package com.company.fail;
 import java.util.*;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-    final Environment globals = new Environment();
+    private final Environment globals = new Environment();
     private Environment environment = globals;
     private final Map<Expr, Integer> locals = new HashMap<>();
     private static Object uninitialized = new Object();
@@ -47,15 +47,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         });
     }
 
-    void interpret(Expr expression) {
+    String interpret(Expr expression) {
         try {
             Object value = evaluate(expression);
-            if (value instanceof String) {
-                value = "\"" + value + "\"";
-            }
-            System.out.println(stringify(value));
+            return stringify(value);
         } catch (RuntimeError error) {
             Fail.runtimeError(error);
+            return null;
         }
     }
 
