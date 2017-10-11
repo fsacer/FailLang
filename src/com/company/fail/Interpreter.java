@@ -3,13 +3,12 @@ package com.company.fail;
 import java.util.*;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-    private final Environment globals = new Environment();
-    private Environment environment = globals;
+    private Environment environment = new Environment();
     private final Map<Expr, Integer> locals = new HashMap<>();
     private static Object uninitialized = new Object();
 
     Interpreter() {
-        globals.define("clock", new Callable() {
+        environment.define("clock", new Callable() {
             @Override
             public int arity() {
                 return 0;
@@ -21,7 +20,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 return (double)System.currentTimeMillis() / 1000.0;
             }
         });
-        globals.define("len", new Callable() {
+        environment.define("len", new Callable() {
             @Override
             public int arity() {
                 return 1;
@@ -33,7 +32,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 return stringify(arguments.get(0)).length();
             }
         });
-        globals.define("str", new Callable() {
+        environment.define("str", new Callable() {
             @Override
             public int arity() {
                 return 1;
