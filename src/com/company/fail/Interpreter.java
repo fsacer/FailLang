@@ -100,14 +100,23 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
         environment.define(stmt.name.lexeme, null);
-        Map<String, Function> methods = new HashMap<>();
+        Map<String, Function> classMethods = new HashMap<>();
+        for (Stmt.Function method : stmt.classMethods) {
+            Function function = new Function(method.name.lexeme, method.function, environment, false);
+            classMethods.put(method.name.lexeme, function);
+        }
 
+        FailClass metaclass = new FailClass(null,
+                stmt.name.lexeme + " metaclass", classMethods);
+
+        Map<String, Function> methods = new HashMap<>();
         for (Stmt.Function method : stmt.methods) {
-            Function function = new Function(method.name.lexeme, method.function, environment, method.name.lexeme.equals("init"));
+            Function function = new Function(method.name.lexeme, method.function, environment,
+                    method.name.lexeme.equals("init"));
             methods.put(method.name.lexeme, function);
         }
 
-        FailClass klass = new FailClass(stmt.name.lexeme, methods);
+        FailClass klass = new FailClass(metaclass, stmt.name.lexeme, methods);
         environment.assign(stmt.name, klass);
         return null;
     }
@@ -314,8 +323,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Object visitGetExpr(Expr.Get expr) {
         Object object = evaluate(expr.object);
+
         if (object instanceof Instance) {
-            return ((Instance) object).get(expr.name);
+            Object result = ((Instance) object).get(expr.name);
+            if (result instanceof Function &&
+                    ((Function) result).isGetter()) {
+                result = ((Function) result).call(this, null);
+            }
+
+            return result;
         }
 
         throw new RuntimeError(expr.name,

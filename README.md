@@ -85,6 +85,9 @@ Other:
     arguments    → expression ( "," expression )* ;
     parameters   → IDENTIFIER ( "," IDENTIFIER )* ;
     function     → IDENTIFIER functionBody;
+    method       → function;
+    static method→ "class" method;
+    constructor  → "init" functionBody; # returns this
     functionBody → "(" parameters? ")" block ;
     lambda       → "fun" functionBody ;
                
@@ -154,3 +157,4 @@ Additional features mostly based on tasks from book:
 - prevention of assignment inside if, loop and ternary condition expressions
 - lambdas
 - warnings, if local variable is unused
+- static methods, getters and setters

@@ -2,11 +2,13 @@ package com.company.fail;
 import java.util.List;
 import java.util.Map;
 
-class FailClass implements Callable {
+class FailClass extends Instance implements Callable {
     final String name;
     private final Map<String, Function> methods;
 
-    FailClass(String name, Map<String, Function> methods) {
+    FailClass(FailClass metaclass, String name,
+             Map<String, Function> methods) {
+        super(metaclass);
         this.name = name;
         this.methods = methods;
     }
