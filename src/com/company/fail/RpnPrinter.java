@@ -26,6 +26,21 @@ class RpnPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitThisExpr(Expr.This expr) {
+        return "this";
+    }
+
+    @Override
+    public String visitGetExpr(Expr.Get expr) {
+        return "get " + expr.name.lexeme;
+    }
+
+    @Override
+    public String visitSetExpr(Expr.Set expr) {
+        return  "set " + expr.name.lexeme;
+    }
+
+    @Override
     public String visitTernaryExpr(Expr.Ternary expr) {
         return postfix("?", expr.expr, expr.thenBranch, expr.elseBranch);
     }

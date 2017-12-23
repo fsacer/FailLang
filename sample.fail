@@ -80,3 +80,13 @@ var a = "global";
 var notUsed = "x";
 print "notused";
 }
+
+print "\nTesting class:";
+class DevonshireCream {
+  serveOn() {
+    return "Scones";
+  }
+}
+
+print DevonshireCream;
+print (5 - (3 - 1)) + -1;

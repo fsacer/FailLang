@@ -6,11 +6,13 @@ public class Function implements Callable {
     private final String name;
     private final Expr.Function declaration;
     private final Environment closure;
+    private final boolean isInitializer;
 
-    Function(String name, Expr.Function declaration, Environment closure) {
+    Function(String name, Expr.Function declaration, Environment closure, boolean isInitializer) {
         this.name = name;
         this.declaration = declaration;
         this.closure = closure;
+        this.isInitializer = isInitializer;
     }
 
     @Override
@@ -31,7 +33,15 @@ public class Function implements Callable {
         } catch (Return returnValue) {
             return returnValue.value;
         }
+
+        if (isInitializer) return closure.getAt(0, "this");
         return null;
+    }
+
+    Function bind(Instance instance) {
+        Environment environment = new Environment(closure);
+        environment.define("this", instance);
+        return new Function(name, declaration, environment, isInitializer);
     }
 
     @Override

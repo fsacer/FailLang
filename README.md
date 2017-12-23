@@ -25,10 +25,12 @@ Language based on lox and tweaked from book "Crafting Interpreters" by @munifice
 Statements:
    
     program      → declaration* EOF ;
-    declaration  → funDecl
+    declaration  → classDecl
+                 | funDecl
                  | varDecl
                  | statement ;
-    funDecl      → "fun" IDENTIFIER functionBody ;
+    classDecl    → "class" IDENTIFIER "{" function* "}" ;
+    funDecl      → "fun" function ;
     varDecl      → "var" IDENTIFIER ( "=" expression )? ";" ;
     statement    → exprStmt
                  | forStmt
@@ -53,7 +55,7 @@ Expressions:
 
     expression  → comma ;
     comma       → assignment ( "," assignment )*
-    assignment  → identifier ( ( "=" | "+=" | "-=" | "*=" | "/=" | "**=" ) assignment )?
+    assignment  → ( call "." )? ( ( "=" | "+=" | "-=" | "*=" | "/=" | "**=" ) assignment )?
                 | ternary ;
     ternary     → logic_or ( "?" expression ":" ternary )?
     logic_or    → logic_and ( "or" logic_and )*
@@ -66,7 +68,7 @@ Expressions:
     unary       → ( "!" | "-" | "++" | "--" ) unary
                 | postfix ;
     postfix     → primary ( "++" | "--" )* | call ;
-    call        → primary ( "(" arguments? ")" )* ;
+    call        → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
     primary     → NUMBER | STRING | "true" | "false" | "none"
                 | lambda
                 | IDENTIFIER
@@ -82,6 +84,7 @@ Other:
 
     arguments    → expression ( "," expression )* ;
     parameters   → IDENTIFIER ( "," IDENTIFIER )* ;
+    function     → IDENTIFIER functionBody;
     functionBody → "(" parameters? ")" block ;
     lambda       → "fun" functionBody ;
                
