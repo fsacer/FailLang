@@ -18,7 +18,8 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     private enum ClassType {
         NONE,
-        CLASS
+        CLASS,
+        SUBCLASS
     }
 
     private enum FunctionType {
@@ -65,8 +66,15 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         ClassType enclosingClass = currentClass;
         currentClass = ClassType.CLASS;
 
+        if (stmt.superclass != null) {
+            currentClass = ClassType.SUBCLASS;
+            resolve(stmt.superclass);
+            beginScope();
+            scopes.peek().put("super", createSystemVariable("super", true));
+        }
+
         beginScope();
-        scopes.peek().put("this", new Variable(new Token(TokenType.IDENTIFIER, "this", true, 0), VariableState.READ));
+        scopes.peek().put("this", createSystemVariable("this", true));
 
         for (Stmt.Function method : stmt.methods) {
             FunctionType declaration = FunctionType.METHOD;
@@ -78,12 +86,14 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
         for (Stmt.Function method : stmt.classMethods) {
             beginScope();
-            scopes.peek().put("this", new Variable(new Token(TokenType.IDENTIFIER, "this", true, 0), VariableState.READ));
+            scopes.peek().put("this", createSystemVariable("this", true));
             resolveFunction(method, FunctionType.METHOD);
             endScope();
         }
 
         endScope();
+
+        if (stmt.superclass != null) endScope();
 
         currentClass = enclosingClass;
         return null;
@@ -238,6 +248,20 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitSuperExpr(Expr.Super expr) {
+        if (currentClass == ClassType.NONE) {
+            Fail.error(expr.keyword,
+                    "Cannot use 'super' outside of a class.");
+        } else if (currentClass != ClassType.SUBCLASS) {
+            Fail.error(expr.keyword,
+                    "Cannot use 'super' in a class with no superclass.");
+        }
+
+        resolveReference(expr, expr.keyword, true);
+        return null;
+    }
+
+    @Override
     public Void visitThisExpr(Expr.This expr) {
         if (currentClass == ClassType.NONE) {
             Fail.error(expr.keyword,
@@ -352,5 +376,9 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
         // Not found. Assume it is global.
         interpreter.resolve(expr, scopes.size());
+    }
+
+    private Variable createSystemVariable(String name, Object value) {
+        return new Variable(new Token(TokenType.IDENTIFIER, name, value, 0), VariableState.READ);
     }
 }

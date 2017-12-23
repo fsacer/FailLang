@@ -5,10 +5,12 @@ import java.util.Map;
 class FailClass extends Instance implements Callable {
     final String name;
     private final Map<String, Function> methods;
+    final FailClass superclass;
 
-    FailClass(FailClass metaclass, String name,
+    FailClass(FailClass metaclass, FailClass superclass, String name,
              Map<String, Function> methods) {
         super(metaclass);
+        this.superclass = superclass;
         this.name = name;
         this.methods = methods;
     }
@@ -16,6 +18,10 @@ class FailClass extends Instance implements Callable {
     Function findMethod(Instance instance, String name) {
         if (methods.containsKey(name)) {
             return methods.get(name).bind(instance);
+        }
+
+        if (superclass != null) {
+            return superclass.findMethod(instance, name);
         }
 
         return null;

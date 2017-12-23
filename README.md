@@ -29,7 +29,8 @@ Statements:
                  | funDecl
                  | varDecl
                  | statement ;
-    classDecl    → "class" IDENTIFIER "{" function* "}" ;
+    classDecl    → "class" IDENTIFIER ( "<" IDENTIFIER )?
+                   "{" function* "}" ;
     funDecl      → "fun" function ;
     varDecl      → "var" IDENTIFIER ( "=" expression )? ";" ;
     statement    → exprStmt
@@ -69,10 +70,10 @@ Expressions:
                 | postfix ;
     postfix     → primary ( "++" | "--" )* | call ;
     call        → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
-    primary     → NUMBER | STRING | "true" | "false" | "none"
+    primary     → "true" | "false" | "none" | "this"
+                | NUMBER | STRING | IDENTIFIER | "(" expression ")"
                 | lambda
-                | IDENTIFIER
-                | "(" expression ")"
+                | "super" "." IDENTIFIER
                 // Error productions...
                 | ( "!=" | "==" ) equality
                 | ( ">" | ">=" | "<" | "<=" ) comparison

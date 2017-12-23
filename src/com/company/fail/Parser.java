@@ -73,6 +73,12 @@ class Parser {
     private Stmt classDeclaration() {
         Token name = consume(IDENTIFIER, "Expect class name.");
 
+        Expr superclass = null;
+        if (match(LESS)) {
+            consume(IDENTIFIER, "Expect superclass name.");
+            superclass = new Expr.Variable(previous());
+        }
+
         List<Stmt.Function> methods = new ArrayList<>();
         List<Stmt.Function> classMethods = new ArrayList<>();
         consume(LEFT_BRACE, "Expect '{' before class body.");
@@ -84,7 +90,7 @@ class Parser {
 
         consume(RIGHT_BRACE, "Expect '}' after class body.");
 
-        return new Stmt.Class(name, methods, classMethods);
+        return new Stmt.Class(name, superclass, methods, classMethods);
     }
 
     private List<Stmt> varDeclarations() {
@@ -497,19 +503,14 @@ class Parser {
     }
 
     private Expr primary() {
-        if (match(NUMBER, STRING)) {
-            return new Expr.Literal(previous().literal);
-        }
-
         if (match(TRUE)) return new Expr.Literal(true);
         if (match(FALSE)) return new Expr.Literal(false);
         if (match(NONE)) return new Expr.Literal(null);
-        if (check(FUN) && !checkNext(IDENTIFIER)) {
-            advance();
-            return functionBody("function");
-        }
-
         if (match(THIS)) return new Expr.This(previous());
+
+        if (match(NUMBER, STRING)) {
+            return new Expr.Literal(previous().literal);
+        }
 
         if (match(IDENTIFIER)) {
             return new Expr.Variable(previous());
@@ -519,6 +520,20 @@ class Parser {
             Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
+        }
+
+        // Lambda
+        if (check(FUN) && !checkNext(IDENTIFIER)) {
+            advance();
+            return functionBody("function");
+        }
+
+        if (match(SUPER)) {
+            Token keyword = previous();
+            consume(DOT, "Expect '.' after 'super'.");
+            Token method = consume(IDENTIFIER,
+                    "Expect superclass method name.");
+            return new Expr.Super(keyword, method);
         }
 
         // Error productions.

@@ -8,6 +8,7 @@ abstract class Expr {
     R visitBinaryExpr(Binary expr);
     R visitFunctionExpr(Function expr);
     R visitCallExpr(Call expr);
+    R visitSuperExpr(Super expr);
     R visitThisExpr(This expr);
     R visitGetExpr(Get expr);
     R visitSetExpr(Set expr);
@@ -79,6 +80,20 @@ abstract class Expr {
     final Expr callee;
     final Token paren;
     final List<Expr> arguments;
+  }
+
+  static class Super extends Expr {
+    Super(Token keyword, Token method) {
+      this.keyword = keyword;
+      this.method = method;
+    }
+
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitSuperExpr(this);
+    }
+
+    final Token keyword;
+    final Token method;
   }
 
   static class This extends Expr {
