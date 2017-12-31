@@ -64,10 +64,11 @@ Expressions:
     equality    → comparison ( ( "!=" | "==" ) comparison )*
     comparison  → term ( ( ">" | ">=" | "<" | "<=" ) term )*
     term        → factor ( ( "-" | "+" ) factor )*
-    factor      → exponent ( ( "/" | "*" ) exponent )*
-    exponent    → unary ( ( "**" ) unary )*
+    factor      → unary ( ( "/" | "*" ) unary )*
     unary       → ( "!" | "-" | "++" | "--" ) unary
-                | postfix ;
+                | exponent ;
+    exponent    → (postfix "**" unary)
+                | postfix
     postfix     → primary ( "++" | "--" )* | call ;
     call        → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
     primary     → "true" | "false" | "none" | "this"
