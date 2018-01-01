@@ -441,19 +441,7 @@ class Parser {
             return new Expr.Unary(operator, right, false);
         }
 
-        return exponent();
-    }
-
-    private Expr exponent() {
-        Expr expr = postfix();
-
-        while (match(STAR_STAR)) {
-            Token operator = previous();
-            Expr right = unary();
-            return new Expr.Binary(expr, operator, right);
-        }
-
-        return expr;
+        return postfix();
     }
 
     private Expr postfix() {
@@ -465,7 +453,19 @@ class Parser {
             return new Expr.Unary(operator, left, true);
         }
 
-        return call();
+        return exponent();
+    }
+
+    private Expr exponent() {
+        Expr expr = call();
+
+        while (match(STAR_STAR)) {
+            Token operator = previous();
+            Expr right = unary();
+            return new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
     }
 
     private Expr call() {
