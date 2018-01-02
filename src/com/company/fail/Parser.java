@@ -423,21 +423,9 @@ class Parser {
     }
 
     private Expr factor() {
-        Expr expr = exponent();
-
-        while (match(SLASH, STAR)) {
-            Token operator = previous();
-            Expr right = exponent();
-            expr = new Expr.Binary(expr, operator, right);
-        }
-
-        return expr;
-    }
-
-    private Expr exponent() {
         Expr expr = unary();
 
-        while (match(STAR_STAR)) {
+        while (match(SLASH, STAR)) {
             Token operator = previous();
             Expr right = unary();
             expr = new Expr.Binary(expr, operator, right);
@@ -447,9 +435,31 @@ class Parser {
     }
 
     private Expr unary() {
-        if (match(BANG, MINUS, PLUS_PLUS, MINUS_MINUS)) {
+        if (match(BANG, MINUS)) {
             Token operator = previous();
             Expr right = unary();
+            return new Expr.Unary(operator, right, false);
+        }
+
+        return exponent();
+    }
+
+    private Expr exponent() {
+        Expr expr = prefix();
+
+        if (match(STAR_STAR)) {
+            Token operator = previous();
+            Expr right = unary();
+            return new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr prefix() {
+        if (match(PLUS_PLUS, MINUS_MINUS)) {
+            Token operator = previous();
+            Expr right = primary();
             return new Expr.Unary(operator, right, false);
         }
 

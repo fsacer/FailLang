@@ -64,11 +64,15 @@ Expressions:
     equality    → comparison ( ( "!=" | "==" ) comparison )*
     comparison  → term ( ( ">" | ">=" | "<" | "<=" ) term )*
     term        → factor ( ( "-" | "+" ) factor )*
-    factor      → exponent ( ( "/" | "*" ) exponent )*
-    exponent    → unary ( ( "**" ) unary )*
+    factor      → unary ( ( "/" | "*" ) unary )*
     unary       → ( "!" | "-" | "++" | "--" ) unary
+                | exponent ;
+    exponent    → (prefix "**" unary)
+                | prefix ;
+    prefix      → ("++" | "--") primary
                 | postfix ;
-    postfix     → primary ( "++" | "--" )* | call ;
+    postfix     → primary ( "++" | "--" )* 
+                | call ; 
     call        → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
     primary     → "true" | "false" | "none" | "this"
                 | NUMBER | STRING | IDENTIFIER | "(" expression ")"
@@ -103,8 +107,9 @@ Currently continue statement does not work as expected for for loops, incremento
     Name	      Operators	               Associates
     Call          a()                      Left
     Postfix       a++ a--                  Left
-    Unary	      ! - ++a --a              Right
-    Exponent      **                       Left
+    Prefix        ++a --a                  Right
+    Exponent      **                       Right
+    Unary	      ! -                      Right
     Factor	      / *                      Left
     Term	      - +                      Left
     Comparison    > >= < <=	               Left
