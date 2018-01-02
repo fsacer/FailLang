@@ -435,9 +435,31 @@ class Parser {
     }
 
     private Expr unary() {
-        if (match(BANG, MINUS, PLUS_PLUS, MINUS_MINUS)) {
+        if (match(BANG, MINUS)) {
             Token operator = previous();
             Expr right = unary();
+            return new Expr.Unary(operator, right, false);
+        }
+
+        return exponent();
+    }
+
+    private Expr exponent() {
+        Expr expr = prefix();
+
+        if (match(STAR_STAR)) {
+            Token operator = previous();
+            Expr right = unary();
+            return new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr prefix() {
+        if (match(PLUS_PLUS, MINUS_MINUS)) {
+            Token operator = previous();
+            Expr right = primary();
             return new Expr.Unary(operator, right, false);
         }
 
@@ -453,19 +475,7 @@ class Parser {
             return new Expr.Unary(operator, left, true);
         }
 
-        return exponent();
-    }
-
-    private Expr exponent() {
-        Expr expr = call();
-
-        while (match(STAR_STAR)) {
-            Token operator = previous();
-            Expr right = unary();
-            return new Expr.Binary(expr, operator, right);
-        }
-
-        return expr;
+        return call();
     }
 
     private Expr call() {
