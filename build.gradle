@@ -1,0 +1,7 @@
+apply plugin: 'java'
+apply plugin: 'application'
+mainClassName = 'com.company.fail.Fail'
+
+jar {
+    baseName = 'jfail'
+}
