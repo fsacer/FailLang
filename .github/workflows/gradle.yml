@@ -18,3 +18,8 @@ jobs:
       with:
         gradle-version: rc
         arguments: build
+    - name: Upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: jfail
+        path: build/libs
